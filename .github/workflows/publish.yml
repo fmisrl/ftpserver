@@ -2,15 +2,17 @@ name: Publish to NuGet and GitHub Releases
 
 on:
   push:
-    tags:
-      - 'v*.*.*' # Triggers the pipeline when a tag like 'v1.0.0' is pushed
+    branches:
+      - master
+      - dev
   workflow_dispatch: # Allows manual triggering from the GitHub UI
 
 jobs:
   build-and-publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # Required for creating GitHub Releases
+      contents: write # Required for creating tags and GitHub Releases
+      packages: write # Required for publishing to GitHub Packages (NuGet)
 
     steps:
       - name: Checkout Code
@@ -44,14 +46,19 @@ jobs:
       - name: Pack NuGet Package
         run: dotnet pack FmiSrl.FtpServer.Server/FmiSrl.FtpServer.Server.csproj -c Release --no-build -p:Version=${{ steps.gitversion.outputs.nuGetVersionV2 }} -o ./artifacts
 
-      - name: Publish to NuGet.org
-        run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+      - name: Publish to GitHub Packages
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --skip-duplicate
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: v${{ steps.gitversion.outputs.semVer }} # Creates the tag from the GitVersion output
           name: Release ${{ steps.gitversion.outputs.semVer }}
-          generate_release_notes: true
+          generate_release_notes: true # Uses commit history for the changelog
+          prerelease: ${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main' }} # Marks as pre-release if on 'dev'
           files: ./artifacts/*.nupkg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Publish to NuGet.org
+        run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
