@@ -1,2 +1,11 @@
-mode: Mainline
 next-version: 1.0.1
+branches:
+  main:
+    regex: ^master$|^main$
+    mode: ContinuousDeployment
+    label: ""
+  develop:
+    regex: ^dev$
+    mode: ContinuousDeployment
+    label: preview
+    increment: Minor
