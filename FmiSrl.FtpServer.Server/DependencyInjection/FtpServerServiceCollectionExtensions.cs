@@ -39,7 +39,7 @@ public interface IFtpServerBuilder
     IFtpServerBuilder UseAuthenticationProvider(IAuthenticationProvider provider);
 }
 
-internal class FtpServerBuilder : IFtpServerBuilder
+internal sealed class FtpServerBuilder : IFtpServerBuilder
 {
     public IServiceCollection Services { get; }
 

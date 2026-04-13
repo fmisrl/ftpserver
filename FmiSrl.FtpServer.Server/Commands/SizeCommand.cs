@@ -1,3 +1,4 @@
+using System.Globalization;
 using FmiSrl.FtpServer.Server.Abstractions;
 
 namespace FmiSrl.FtpServer.Server.Commands;
@@ -27,7 +28,7 @@ public class SizeCommand : IFtpCommand
 
             if (file != null)
             {
-                await context.Session.SendResponseAsync(213, file.Size.ToString());
+                await context.Session.SendResponseAsync(213, file.Size.ToString(CultureInfo.InvariantCulture));
             }
             else
             {

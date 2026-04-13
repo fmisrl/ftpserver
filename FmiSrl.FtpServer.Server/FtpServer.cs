@@ -22,7 +22,7 @@ public class FtpServer
     private readonly FtpCommandHandler _commandHandler;
     private readonly Dictionary<int, IFtpSession> _sessions = new();
 
-    private NetServer? _netServer = null;
+    private NetServer? _netServer;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FtpServer"/> class.

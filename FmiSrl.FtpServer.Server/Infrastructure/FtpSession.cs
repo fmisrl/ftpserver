@@ -48,7 +48,7 @@ public class FtpSession : IFtpSession
         return new SessionLock(_commandSemaphore);
     }
 
-    private class SessionLock : IDisposable
+    private sealed class SessionLock : IDisposable
     {
         private readonly SemaphoreSlim _semaphore;
         public SessionLock(SemaphoreSlim semaphore) => _semaphore = semaphore;
