@@ -1,4 +1,15 @@
 next-version: 1.0.0
 assembly-versioning-scheme: MajorMinorPatch
 assembly-file-versioning-scheme: MajorMinorPatch
-mode: ContinuousDelivery
+mode: Mainline
+branches:
+  master:
+    regex: ^master$|^main$
+    mode: Mainline
+    tag: ''
+    increment: Patch
+  dev:
+    regex: ^dev$
+    mode: ContinuousDeployment
+    tag: preview
+    increment: Minor
