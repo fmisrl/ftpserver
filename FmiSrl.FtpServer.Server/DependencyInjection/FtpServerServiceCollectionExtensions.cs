@@ -23,8 +23,8 @@ public static class FtpServerServiceCollectionExtensions
         services.TryAddSingleton<FtpServer>();
 
         // Default implementations
-        services.TryAddSingleton<IFileSystemProvider>(new PhysicalFileSystemProvider("./ftp_root"));
-        services.TryAddSingleton<IAuthenticationProvider>(new SimpleAuthenticationProvider("admin", "password"));
+        services.TryAddSingleton<IFileSystemProvider>(sp => new PhysicalFileSystemProvider("./ftp_root"));
+        services.TryAddSingleton<IAuthenticationProvider>(sp => new SimpleAuthenticationProvider("admin", "password"));
 
         return new FtpServerBuilder(services);
     }

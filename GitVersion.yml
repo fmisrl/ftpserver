@@ -1,24 +1,4 @@
-﻿mode: ContinuousDeployment
-next-version: 1.4.0
-
-branches:
-  master:
-    increment: Minor
-    regex: (^master$|^origin\/master$|^main$|^origin\/main$)
-    label: ''
-
-  develop:
-    increment: Minor
-    regex: ^dev(elop)?(ment)?$
-    label: alpha
-
-  feature:
-    increment: Minor
-    regex: '^feature/*'
-    label: useBranchName
-    source-branches: [ 'master' ]
-
-  hotfix:
-    increment: Patch
-    regex: '^hotfix/*'
-    source-branches: [ 'master' ]
+next-version: 1.0.0
+assembly-versioning-scheme: MajorMinorPatch
+assembly-file-versioning-scheme: MajorMinorPatch
+mode: ContinuousDelivery

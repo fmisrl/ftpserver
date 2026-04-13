@@ -26,21 +26,20 @@ public class FtpServer
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FtpServer"/> class.
-    /// This constructor supports both dependency injection and manual usage.
     /// </summary>
+    /// <param name="fileSystemProvider">The file system provider.</param>
+    /// <param name="authenticationProvider">The authentication provider.</param>
     /// <param name="configurationOptions">Optional configuration options. If null, default options will be used.</param>
-    /// <param name="fileSystemProvider">Optional file system provider. If null, <see cref="PhysicalFileSystemProvider"/> with "./ftp_root" will be used.</param>
-    /// <param name="authenticationProvider">Optional authentication provider. If null, <see cref="SimpleAuthenticationProvider"/> with "admin"/"password" will be used.</param>
     /// <param name="logger">Optional logger. If null, <see cref="NullLogger{FtpServer}.Instance"/> will be used.</param>
     public FtpServer(
+        IFileSystemProvider fileSystemProvider,
+        IAuthenticationProvider authenticationProvider,
         FtpServerConfigurationOptions? configurationOptions = null,
-        IFileSystemProvider? fileSystemProvider = null,
-        IAuthenticationProvider? authenticationProvider = null,
         ILogger<FtpServer>? logger = null)
     {
+        _fileSystemProvider = fileSystemProvider ?? throw new ArgumentNullException(nameof(fileSystemProvider));
+        _authenticationProvider = authenticationProvider ?? throw new ArgumentNullException(nameof(authenticationProvider));
         _configurationOptions = configurationOptions ?? new FtpServerConfigurationOptions();
-        _fileSystemProvider = fileSystemProvider ?? new PhysicalFileSystemProvider("./ftp_root");
-        _authenticationProvider = authenticationProvider ?? new SimpleAuthenticationProvider("admin", "password");
         _logger = logger ?? NullLogger<FtpServer>.Instance;
         _commandHandler = new FtpCommandHandler();
         

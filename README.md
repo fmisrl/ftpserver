@@ -64,11 +64,11 @@ var options = new FtpServerConfigurationOptions
     ServerName = "Standalone FTP Server"
 };
 
-// All parameters are optional and have defaults
+// Providers are strictly required
 var ftpServer = new FtpServer(
-    options,
     new PhysicalFileSystemProvider("./ftp_root"),
     new SimpleAuthenticationProvider("user", "pass"),
+    options,
     NullLogger<FtpServer>.Instance
 );
 
