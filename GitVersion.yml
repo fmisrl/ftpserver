@@ -6,10 +6,10 @@ branches:
   master:
     regex: ^master$|^main$
     mode: Mainline
-    tag: ''
+    label: ''
     increment: Patch
   dev:
     regex: ^dev$
     mode: ContinuousDeployment
-    tag: preview
+    label: preview
     increment: Minor
