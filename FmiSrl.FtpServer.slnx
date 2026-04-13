@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FmiSrl.FtpServer.Server/FmiSrl.FtpServer.Server.csproj" />
+  <Project Path="FmiSrl.FtpServer.TestClient/FmiSrl.FtpServer.TestClient.csproj" />
+</Solution>
