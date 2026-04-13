@@ -115,7 +115,3 @@ public interface IFileSystemProvider
     Task RenameAsync(string oldPath, string newPath);
 }
 ```
-
-## License
-
-This project is licensed under the MIT License.
