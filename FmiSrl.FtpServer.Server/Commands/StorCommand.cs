@@ -40,7 +40,7 @@ public class StorCommand : IFtpCommand
         try
         {
             var dataStream = await context.Session.DataConnection.GetStreamAsync();
-            using (var fileStream = await context.FileSystem.OpenWriteAsync(targetFile))
+            using (var fileStream = await context.FileSystem.OpenWriteAsync(context.AuthContext, targetFile))
             {
                 context.Logger.LogInformation("Starting upload of {TargetFile}...", targetFile);
                 await dataStream.CopyToAsync(fileStream);

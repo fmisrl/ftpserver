@@ -28,9 +28,9 @@ public class DeleCommand : IFtpCommand
 
         try
         {
-            if (await context.FileSystem.FileExistsAsync(targetFile))
+            if (await context.FileSystem.FileExistsAsync(context.AuthContext, targetFile))
             {
-                await context.FileSystem.DeleteFileAsync(targetFile);
+                await context.FileSystem.DeleteFileAsync(context.AuthContext, targetFile);
                 await context.Session.SendResponseAsync(250, "File deleted successfully.");
             }
             else

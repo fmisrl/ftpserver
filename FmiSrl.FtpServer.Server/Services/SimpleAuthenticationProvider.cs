@@ -1,20 +1,14 @@
 using FmiSrl.FtpServer.Server.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace FmiSrl.FtpServer.Server.Services;
 
-public class SimpleAuthenticationProvider : IAuthenticationProvider
+public class SimpleAuthenticationProvider(IOptions<SimpleAuthenticationProviderOptions> options) : IAuthenticationProvider
 {
-    private readonly string _validUsername;
-    private readonly string _validPassword;
-
-    public SimpleAuthenticationProvider(string validUsername, string validPassword)
-    {
-        _validUsername = validUsername;
-        _validPassword = validPassword;
-    }
+    private readonly SimpleAuthenticationProviderOptions _options = options.Value;
 
     public Task<bool> AuthenticateAsync(string username, string password)
     {
-        return Task.FromResult(username == _validUsername && password == _validPassword);
+        return Task.FromResult(username == _options.Username && password == _options.Password);
     }
 }

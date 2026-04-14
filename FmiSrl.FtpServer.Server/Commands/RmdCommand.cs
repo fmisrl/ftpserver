@@ -28,9 +28,9 @@ public class RmdCommand : IFtpCommand
 
         try
         {
-            if (await context.FileSystem.DirectoryExistsAsync(targetDir))
+            if (await context.FileSystem.DirectoryExistsAsync(context.AuthContext, targetDir))
             {
-                await context.FileSystem.DeleteDirectoryAsync(targetDir);
+                await context.FileSystem.DeleteDirectoryAsync(context.AuthContext, targetDir);
                 await context.Session.SendResponseAsync(250, "Directory deleted successfully.");
             }
             else

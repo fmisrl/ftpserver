@@ -23,7 +23,7 @@ public class SizeCommand : IFtpCommand
 
         try
         {
-            var entries = await context.FileSystem.GetEntriesAsync(Path.GetDirectoryName(targetFile) ?? "/");
+            var entries = await context.FileSystem.GetEntriesAsync(context.AuthContext, Path.GetDirectoryName(targetFile) ?? "/");
             var file = entries.FirstOrDefault(e => !e.IsDirectory && e.Name == Path.GetFileName(targetFile));
 
             if (file != null)

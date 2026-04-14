@@ -28,7 +28,7 @@ public class ListCommand : IFtpCommand
             var dataStream = await context.Session.DataConnection.GetStreamAsync();
             using (var writer = new StreamWriter(dataStream, Encoding.UTF8, leaveOpen: true))
             {
-                var entries = await context.FileSystem.GetEntriesAsync(context.Session.CurrentDirectory);
+                var entries = await context.FileSystem.GetEntriesAsync(context.AuthContext, context.Session.CurrentDirectory);
                 foreach (var entry in entries)
                 {
                     // Simple Unix-style listing format

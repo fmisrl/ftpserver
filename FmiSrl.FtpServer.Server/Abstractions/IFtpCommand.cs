@@ -16,4 +16,7 @@ public record FtpCommandContext(
     IAuthenticationProvider Authenticator,
     FtpServerConfigurationOptions Configuration,
     ILogger Logger
-);
+)
+{
+    public FtpAuthenticationContext AuthContext => new(Session.Username);
+}

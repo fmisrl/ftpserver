@@ -49,7 +49,7 @@ public class CwdCommand : IFtpCommand
         try
         {
             // Root directory always exists virtually
-            if (targetDirectory == "/" || await context.FileSystem.DirectoryExistsAsync(targetDirectory))
+            if (targetDirectory == "/" || await context.FileSystem.DirectoryExistsAsync(context.AuthContext, targetDirectory))
             {
                 context.Session.CurrentDirectory = targetDirectory;
                 await context.Session.SendResponseAsync(250, "Directory successfully changed.");

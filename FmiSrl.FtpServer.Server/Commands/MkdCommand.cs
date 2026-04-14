@@ -30,13 +30,13 @@ public class MkdCommand : IFtpCommand
 
         try
         {
-            if (await context.FileSystem.DirectoryExistsAsync(targetDirectory))
+            if (await context.FileSystem.DirectoryExistsAsync(context.AuthContext, targetDirectory))
             {
                 await context.Session.SendResponseAsync(550, "Directory already exists.");
                 return;
             }
 
-            await context.FileSystem.CreateDirectoryAsync(targetDirectory);
+            await context.FileSystem.CreateDirectoryAsync(context.AuthContext, targetDirectory);
             await context.Session.SendResponseAsync(257, $"\"{targetDirectory}\" directory created.");
         }
         catch (Exception ex)

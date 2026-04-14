@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using Miku.Core;
 using FmiSrl.FtpServer.Server.Abstractions;
 using FmiSrl.FtpServer.Server.Infrastructure;
@@ -6,6 +6,7 @@ using FmiSrl.FtpServer.Server.Commands;
 using FmiSrl.FtpServer.Server.Services;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 namespace FmiSrl.FtpServer.Server;
 
@@ -13,38 +14,26 @@ namespace FmiSrl.FtpServer.Server;
 /// Represents an FTP server that handles file transfer operations
 /// using the File Transfer Protocol (FTP).
 /// </summary>
-public class FtpServer
+public class FtpServer(
+    IFileSystemProvider fileSystemProvider,
+    IAuthenticationProvider authenticationProvider,
+    IOptions<FtpServerConfigurationOptions> configurationOptions,
+    ILogger<FtpServer>? logger = null
+)
 {
-    private readonly FtpServerConfigurationOptions _configurationOptions;
-    private readonly IFileSystemProvider _fileSystemProvider;
-    private readonly IAuthenticationProvider _authenticationProvider;
-    private readonly ILogger<FtpServer> _logger;
-    private readonly FtpCommandHandler _commandHandler;
-    private readonly Dictionary<int, IFtpSession> _sessions = new();
+    private readonly FtpServerConfigurationOptions _configurationOptions = configurationOptions.Value;
+
+    private readonly IFileSystemProvider _fileSystemProvider =
+        fileSystemProvider ?? throw new ArgumentNullException(nameof(fileSystemProvider));
+
+    private readonly IAuthenticationProvider _authenticationProvider =
+        authenticationProvider ?? throw new ArgumentNullException(nameof(authenticationProvider));
+
+    private readonly ILogger<FtpServer> _logger = logger ?? NullLogger<FtpServer>.Instance;
+    private readonly FtpCommandHandler _commandHandler = new();
+    private readonly Dictionary<int, IFtpSession> _sessions = [];
 
     private NetServer? _netServer;
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="FtpServer"/> class.
-    /// </summary>
-    /// <param name="fileSystemProvider">The file system provider.</param>
-    /// <param name="authenticationProvider">The authentication provider.</param>
-    /// <param name="configurationOptions">Optional configuration options. If null, default options will be used.</param>
-    /// <param name="logger">Optional logger. If null, <see cref="NullLogger{FtpServer}.Instance"/> will be used.</param>
-    public FtpServer(
-        IFileSystemProvider fileSystemProvider,
-        IAuthenticationProvider authenticationProvider,
-        FtpServerConfigurationOptions? configurationOptions = null,
-        ILogger<FtpServer>? logger = null)
-    {
-        _fileSystemProvider = fileSystemProvider ?? throw new ArgumentNullException(nameof(fileSystemProvider));
-        _authenticationProvider = authenticationProvider ?? throw new ArgumentNullException(nameof(authenticationProvider));
-        _configurationOptions = configurationOptions ?? new FtpServerConfigurationOptions();
-        _logger = logger ?? NullLogger<FtpServer>.Instance;
-        _commandHandler = new FtpCommandHandler();
-        
-        RegisterCommands();
-    }
 
     private void RegisterCommands()
     {
@@ -81,35 +70,27 @@ public class FtpServer
             throw new InvalidOperationException("The FTP server is already running.");
         }
 
-        // Ensure the root path exists if it's the physical provider
-        if (_fileSystemProvider is PhysicalFileSystemProvider physicalProvider)
-        {
-             // PhysicalFileSystemProvider doesn't expose its root path publicly easily, 
-             // but we can assume it handles its own existence or we handle it here if it's the default
-             if (!Directory.Exists("./ftp_root"))
-             {
-                 Directory.CreateDirectory("./ftp_root");
-             }
-        }
+        RegisterCommands();
 
         _netServer = new NetServer();
-        _netServer.OnClientConnected += async c => {
+        _netServer.OnClientConnected += async c =>
+        {
             _logger.LogInformation("Client connected: {Ip} (Id: {Id})", c.Ip, c.Id);
             var session = new FtpSession(c);
             _sessions[c.Id] = session;
-            
+
             await session.SendResponseAsync(220, $"{_configurationOptions.ServerName} ready for new user.");
         };
 
-        _netServer.OnClientDataReceived += async (c, data) => {
-            
+        _netServer.OnClientDataReceived += async (c, data) =>
+        {
             if (!_sessions.TryGetValue(c.Id, out var session))
             {
                 return;
             }
 
             var ftpSession = (FtpSession)session;
-            
+
             using (await ftpSession.LockSessionAsync())
             {
                 var rawData = Encoding.UTF8.GetString(data.ToArray());
@@ -131,11 +112,18 @@ public class FtpServer
                     var verb = parts[0].ToUpperInvariant();
                     var args = parts.Length > 1 ? parts[1].Trim() : string.Empty;
 
-                    var context = new FtpCommandContext(session, verb, args, _fileSystemProvider, _authenticationProvider, _configurationOptions, _logger);
+                    var context = new FtpCommandContext(
+                        session,
+                        verb,
+                        args,
+                        _fileSystemProvider,
+                        _authenticationProvider,
+                        _configurationOptions,
+                        _logger);
                     await _commandHandler.HandleCommandAsync(context);
 
                     if (verb != "QUIT") continue;
-                    
+
                     _logger.LogInformation("Client disconnected explicitly: {Id}", c.Id);
                     _sessions.Remove(c.Id);
                     c.Stop();
@@ -144,7 +132,8 @@ public class FtpServer
             }
         };
 
-        _netServer.OnClientDisconnected += (c, reason) => {
+        _netServer.OnClientDisconnected += (c, reason) =>
+        {
             _logger.LogInformation("Client disconnected: {Id}. Reason: {Reason}", c.Id, reason);
             _sessions.Remove(c.Id);
         };
@@ -163,7 +152,7 @@ public class FtpServer
         {
             return Task.CompletedTask;
         }
-        
+
         _netServer.Stop();
         _netServer = null;
         _logger.LogInformation("FTP Server stopped.");

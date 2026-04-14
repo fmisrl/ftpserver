@@ -34,7 +34,7 @@ public class RetrCommand : IFtpCommand
             targetFile = context.Session.CurrentDirectory.TrimEnd('/') + '/' + targetFile;
         }
 
-        if (!await context.FileSystem.FileExistsAsync(targetFile))
+        if (!await context.FileSystem.FileExistsAsync(context.AuthContext, targetFile))
         {
             await context.Session.SendResponseAsync(550, "File not found.");
             return;
@@ -45,7 +45,7 @@ public class RetrCommand : IFtpCommand
         try
         {
             var dataStream = await context.Session.DataConnection.GetStreamAsync();
-            using (var fileStream = await context.FileSystem.OpenReadAsync(targetFile))
+            using (var fileStream = await context.FileSystem.OpenReadAsync(context.AuthContext, targetFile))
             {
                 context.Logger.LogInformation("Starting transfer of {TargetFile} ({Length} bytes)...", targetFile, fileStream.Length);
                 await fileStream.CopyToAsync(dataStream);

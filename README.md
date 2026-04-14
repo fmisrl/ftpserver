@@ -25,18 +25,31 @@ To use the FTP server in a modern .NET application (e.g., ASP.NET Core, Worker S
 ```csharp
 using Microsoft.Extensions.DependencyInjection;
 using FmiSrl.FtpServer.Server;
+using FmiSrl.FtpServer.Server.DependencyInjection;
 using FmiSrl.FtpServer.Server.Services;
 
 var builder = Host.CreateApplicationBuilder(args);
 
-// Add FTP Server with default configuration
+// Configure Options for Providers
+builder.Services.Configure<PhysicalFileSystemProviderOptions>(opt =>
+{
+    opt.RootDirectory = "./my_ftp_root";
+});
+
+builder.Services.Configure<SimpleAuthenticationProviderOptions>(opt =>
+{
+    opt.Username = "admin";
+    opt.Password = "secure_password";
+});
+
+// Add FTP Server and configure providers via generic DI
 builder.Services.AddFtpServer(options =>
 {
     options.FtpPort = 21;
     options.ServerName = "My Custom FTP Server";
 })
-.UseFileSystemProvider(new PhysicalFileSystemProvider("./my_ftp_root"))
-.UseAuthenticationProvider(new SimpleAuthenticationProvider("admin", "secure_password"));
+.UseFileSystemProvider<PhysicalFileSystemProvider>()
+.UseAuthenticationProvider<SimpleAuthenticationProvider>();
 
 var host = builder.Build();
 
@@ -57,18 +70,30 @@ You can also use the library in simple console applications or legacy projects w
 using FmiSrl.FtpServer.Server;
 using FmiSrl.FtpServer.Server.Services;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
-var options = new FtpServerConfigurationOptions
+var serverOptions = Options.Create(new FtpServerConfigurationOptions
 {
     FtpPort = 2121,
     ServerName = "Standalone FTP Server"
-};
+});
+
+var fsOptions = Options.Create(new PhysicalFileSystemProviderOptions
+{
+    RootDirectory = "./ftp_root"
+});
+
+var authOptions = Options.Create(new SimpleAuthenticationProviderOptions
+{
+    Username = "user",
+    Password = "password"
+});
 
 // Providers are strictly required
 var ftpServer = new FtpServer(
-    new PhysicalFileSystemProvider("./ftp_root"),
-    new SimpleAuthenticationProvider("user", "pass"),
-    options,
+    new PhysicalFileSystemProvider(fsOptions),
+    new SimpleAuthenticationProvider(authOptions),
+    serverOptions,
     NullLogger<FtpServer>.Instance
 );
 
@@ -99,19 +124,22 @@ public interface IAuthenticationProvider
 
 ### File System Provider
 
-Implement the `IFileSystemProvider` interface to provide custom storage (e.g., Azure Blob Storage, Database, S3):
+Implement the `IFileSystemProvider` interface to provide custom storage (e.g., Azure Blob Storage, Database, S3).
+It provides an `FtpAuthenticationContext` which includes the currently authenticated username:
 
 ```csharp
+using FmiSrl.FtpServer.Server.Abstractions;
+
 public interface IFileSystemProvider
 {
-    Task<IEnumerable<FileSystemEntry>> GetEntriesAsync(string path);
-    Task<Stream> OpenReadAsync(string path);
-    Task<Stream> OpenWriteAsync(string path);
-    Task DeleteFileAsync(string path);
-    Task CreateDirectoryAsync(string path);
-    Task DeleteDirectoryAsync(string path);
-    Task<bool> FileExistsAsync(string path);
-    Task<bool> DirectoryExistsAsync(string path);
-    Task RenameAsync(string oldPath, string newPath);
+    Task<IEnumerable<FileSystemEntry>> GetEntriesAsync(FtpAuthenticationContext authContext, string path);
+    Task<Stream> OpenReadAsync(FtpAuthenticationContext authContext, string path);
+    Task<Stream> OpenWriteAsync(FtpAuthenticationContext authContext, string path);
+    Task DeleteFileAsync(FtpAuthenticationContext authContext, string path);
+    Task CreateDirectoryAsync(FtpAuthenticationContext authContext, string path);
+    Task DeleteDirectoryAsync(FtpAuthenticationContext authContext, string path);
+    Task<bool> FileExistsAsync(FtpAuthenticationContext authContext, string path);
+    Task<bool> DirectoryExistsAsync(FtpAuthenticationContext authContext, string path);
+    Task RenameAsync(FtpAuthenticationContext authContext, string oldPath, string newPath);
 }
 ```

@@ -48,7 +48,7 @@ public class RenameCommands : IFtpCommand
 
             try
             {
-                await context.FileSystem.RenameAsync(_rnfrPath, rntoPath);
+                await context.FileSystem.RenameAsync(context.AuthContext, _rnfrPath, rntoPath);
                 await context.Session.SendResponseAsync(250, "File renamed successfully.");
             }
             catch (Exception ex)
