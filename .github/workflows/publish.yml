@@ -21,18 +21,18 @@ jobs:
           lfs: true
 
       - name: Install GitVersion
-          uses: gittools/actions/gitversion/setup@v4.5.0
-          with:
-            versionSpec: '6.7.x'
+        uses: gittools/actions/gitversion/setup@v4.5.0
+        with:
+          versionSpec: '6.7.x'
 
       - name: Determine Version
-          id: version_step
-          uses: gittools/actions/gitversion/execute@v4.5.0
-          with:
-            configFilePath: GitVersion.yml
-            disableCache: true
-            updateAssemblyInfo: true
-            updateProjectFiles: true
+        id: version_step
+        uses: gittools/actions/gitversion/execute@v4.5.0
+        with:
+          configFilePath: GitVersion.yml
+          disableCache: true
+          updateAssemblyInfo: true
+          updateProjectFiles: true
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
