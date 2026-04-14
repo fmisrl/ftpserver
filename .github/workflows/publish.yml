@@ -31,7 +31,6 @@ jobs:
         with:
           configFilePath: GitVersion.yml
           disableCache: true
-          updateAssemblyInfo: true
           updateProjectFiles: true
 
       - name: Setup .NET
