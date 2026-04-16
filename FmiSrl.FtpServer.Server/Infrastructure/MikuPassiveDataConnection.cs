@@ -26,12 +26,13 @@ public class MikuPassiveDataConnection : IFtpDataConnection
     /// <param name="ip">The IP address to bind the data server to.</param>
     /// <param name="minPort">The minimum port number in the range of allowed ports.</param>
     /// <param name="maxPort">The maximum port number in the range of allowed ports.</param>
-    public MikuPassiveDataConnection(string ip, int minPort, int maxPort)
+    /// <param name="authorizedClientIp">The IP address authorized to connect to this data port.</param>
+    public MikuPassiveDataConnection(string ip, int minPort, int maxPort, string authorizedClientIp)
     {
         // Try to find a free port in the specified range
-        var bound = false;
-        
-        for (var portToTry = minPort; portToTry <= maxPort; portToTry++)
+        bool bound = false;
+
+        for (int portToTry = minPort; portToTry <= maxPort; portToTry++)
         {
             try
             {
@@ -59,11 +60,19 @@ public class MikuPassiveDataConnection : IFtpDataConnection
 
         _dataServer = new NetServer();
         _dataServer.OnClientConnected += c => {
+            if (c.Ip != authorizedClientIp)
+            {
+                c.Stop();
+                return;
+            }
             _stream = new MikuClientStream(c);
             _streamTcs.TrySetResult(_stream);
         };
         _dataServer.OnClientDataReceived += (c, data) => {
-            _stream?.EnqueueData(data);
+            if (c.Ip == authorizedClientIp)
+            {
+                _stream?.EnqueueData(data);
+            }
         };
         _dataServer.OnClientDisconnected += (c, reason) => {
             _stream?.Complete();

@@ -1,5 +1,6 @@
 using FmiSrl.FtpServer.Server.Abstractions;
 using FmiSrl.FtpServer.Server.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace FmiSrl.FtpServer.Server.Commands;
 
@@ -35,7 +36,8 @@ public class MkdCommand : IFtpCommand
         }
         catch (Exception ex)
         {
-            await context.Session.SendResponseAsync(550, $"Failed to create directory: {ex.Message}");
+            context.Logger.LogError(ex, "Failed to create directory.");
+            await context.Session.SendResponseAsync(550, "Action failed.");
         }
     }
 

@@ -1,5 +1,6 @@
 using FmiSrl.FtpServer.Server.Abstractions;
 using FmiSrl.FtpServer.Server.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace FmiSrl.FtpServer.Server.Commands;
 
@@ -57,7 +58,8 @@ public class RenameCommands : IFtpCommand
         }
         catch (Exception ex)
         {
-            await context.Session.SendResponseAsync(550, $"Error renaming file: {ex.Message}");
+            context.Logger.LogError(ex, "Error renaming file.");
+            await context.Session.SendResponseAsync(550, "Action failed.");
         }
         finally
         {

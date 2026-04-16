@@ -9,7 +9,12 @@ namespace FmiSrl.FtpServer.Server.Infrastructure;
 public class MikuClientStream : Stream
 {
     private readonly NetClient _client;
-    private readonly Channel<byte[]> _readChannel = Channel.CreateUnbounded<byte[]>();
+    private readonly Channel<byte[]> _readChannel = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(128)
+    {
+        FullMode = BoundedChannelFullMode.Wait,
+        SingleReader = true,
+        SingleWriter = true
+    });
     private byte[]? _currentReadBuffer;
     private int _currentReadBufferPosition;
     private bool _isDisposed;

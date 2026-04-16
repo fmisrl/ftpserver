@@ -20,7 +20,14 @@ public class PhysicalFileSystemProvider(IOptions<PhysicalFileSystemProviderOptio
         if (!Directory.Exists(userRootPath)) Directory.CreateDirectory(userRootPath);
 
         var normalizedPath = path.Replace('/', Path.DirectorySeparatorChar).TrimStart(Path.DirectorySeparatorChar);
-        return Path.Combine(userRootPath, normalizedPath);
+        var finalPath = Path.GetFullPath(Path.Combine(userRootPath, normalizedPath));
+
+        if (!finalPath.StartsWith(userRootPath + Path.DirectorySeparatorChar) && finalPath != userRootPath)
+        {
+            throw new UnauthorizedAccessException("Path traversal detected.");
+        }
+
+        return finalPath;
     }
 
     /// <inheritdoc/>

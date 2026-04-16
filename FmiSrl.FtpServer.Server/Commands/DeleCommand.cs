@@ -1,5 +1,6 @@
 using FmiSrl.FtpServer.Server.Abstractions;
 using FmiSrl.FtpServer.Server.Infrastructure;
+using Microsoft.Extensions.Logging;
 
 namespace FmiSrl.FtpServer.Server.Commands;
 
@@ -35,7 +36,8 @@ public class DeleCommand : IFtpCommand
         }
         catch (Exception ex)
         {
-            await context.Session.SendResponseAsync(550, $"Error deleting file: {ex.Message}");
+            context.Logger.LogError(ex, "Error deleting file.");
+            await context.Session.SendResponseAsync(550, "Action failed.");
         }
     }
 

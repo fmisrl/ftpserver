@@ -127,6 +127,15 @@ public class FtpServer(
         var rawData = Encoding.UTF8.GetString(data.ToArray());
         session.CommandBuffer.Append(rawData);
 
+        // DoS protection: prevent unbounded memory allocation
+        if (session.CommandBuffer.Length > 4096)
+        {
+            _logger.LogWarning("Command buffer exceeded maximum length for client {Id}. Disconnecting.", client.Id);
+            await session.SendResponseAsync(500, "Line too long.");
+            HandleExplicitQuit(client);
+            return;
+        }
+
         while (TryExtractLine(session.CommandBuffer, out var line))
         {
             await ExecuteCommandAsync(client, session, line);

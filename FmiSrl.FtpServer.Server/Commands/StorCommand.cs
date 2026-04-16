@@ -45,7 +45,7 @@ public class StorCommand : IFtpCommand
         catch (Exception ex)
         {
             context.Logger.LogError(ex, "Failed to transfer file: {TargetFile}", targetFile);
-            await context.Session.SendResponseAsync(550, $"Failed to transfer file: {ex.Message}");
+            await context.Session.SendResponseAsync(550, "Action failed.");
         }
         finally
         {

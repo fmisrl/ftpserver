@@ -30,17 +30,19 @@ public class PasvCommand : IFtpCommand
             await context.Session.DataConnection.DisposeAsync();
         }
 
+        var clientIp = (context.Session.RemoteEndPoint as IPEndPoint)?.Address.ToString() ?? "";
+
         var dataConnection = new MikuPassiveDataConnection(
             context.Configuration.ListeningIp,
             context.Configuration.PasvMinPort,
-            context.Configuration.PasvMaxPort
+            context.Configuration.PasvMaxPort,
+            clientIp
         );
 
         context.Session.DataConnection = dataConnection;
 
         await SendPassiveModeResponseAsync(context, dataConnection.Port);
     }
-
     private static async Task SendPassiveModeResponseAsync(FtpCommandContext context, int port)
     {
         var localIp = GetLocalIpAddress(context.Session.RemoteEndPoint);
