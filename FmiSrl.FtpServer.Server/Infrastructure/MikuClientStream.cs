@@ -64,7 +64,7 @@ public class MikuClientStream : Stream
     public override void Flush() 
     {
         // Simple wait for library to finish background tasks
-        int timeout = 0;
+        var timeout = 0;
         while (_client.HasPendingSends && timeout < 200) // 10 seconds max
         {
             Thread.Sleep(50);
@@ -75,7 +75,7 @@ public class MikuClientStream : Stream
     /// <inheritdoc/>
     public override async Task FlushAsync(CancellationToken cancellationToken)
     {
-        int timeout = 0;
+        var timeout = 0;
         while (_client.HasPendingSends && timeout < 200)
         {
             await Task.Delay(50, cancellationToken);
@@ -123,8 +123,8 @@ public class MikuClientStream : Stream
 
         if (_currentReadBuffer != null && _currentReadBufferPosition < _currentReadBuffer.Length)
         {
-            int available = _currentReadBuffer.Length - _currentReadBufferPosition;
-            int toCopy = Math.Min(available, buffer.Length);
+            var available = _currentReadBuffer.Length - _currentReadBufferPosition;
+            var toCopy = Math.Min(available, buffer.Length);
             _currentReadBuffer.AsSpan(_currentReadBufferPosition, toCopy).CopyTo(buffer.Span);
             _currentReadBufferPosition += toCopy;
             return toCopy;
@@ -145,14 +145,14 @@ public class MikuClientStream : Stream
         if (count == 0) return;
         
         // Blocking wait for backpressure
-        int backoff = 0;
+        var backoff = 0;
         while (_client.HasPendingSends && backoff < 100)
         {
             Thread.Sleep(10);
             backoff++;
         }
 
-        byte[] data = new byte[count];
+        var data = new byte[count];
         Buffer.BlockCopy(buffer, offset, data, 0, count);
         _client.Send(data);
     }
@@ -170,20 +170,20 @@ public class MikuClientStream : Stream
 
         // Break large writes into smaller chunks to help Miku's internal buffers
         const int chunkSize = 16384;
-        int processed = 0;
+        var processed = 0;
         while (processed < buffer.Length)
         {
-            int toSend = Math.Min(chunkSize, buffer.Length - processed);
+            var toSend = Math.Min(chunkSize, buffer.Length - processed);
             
             // Wait for backpressure
-            int backoff = 0;
+            var backoff = 0;
             while (_client.HasPendingSends && backoff < 50)
             {
                 await Task.Delay(10, cancellationToken);
                 backoff++;
             }
 
-            byte[] data = buffer.Slice(processed, toSend).ToArray();
+            var data = buffer.Slice(processed, toSend).ToArray();
             _client.Send(data);
             processed += toSend;
         }

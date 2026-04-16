@@ -31,7 +31,7 @@ public class DeleCommand : IFtpCommand
 
     private static async Task DeleteFileAsync(FtpCommandContext context)
     {
-        string targetFile = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
+        var targetFile = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         try
         {

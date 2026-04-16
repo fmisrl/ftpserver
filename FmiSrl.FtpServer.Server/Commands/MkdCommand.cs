@@ -31,7 +31,7 @@ public class MkdCommand : IFtpCommand
 
     private static async Task CreateDirectoryAsync(FtpCommandContext context)
     {
-        string targetDirectory = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
+        var targetDirectory = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         try
         {

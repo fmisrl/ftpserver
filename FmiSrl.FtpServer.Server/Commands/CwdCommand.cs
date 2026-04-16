@@ -31,7 +31,7 @@ public class CwdCommand : IFtpCommand
 
     private static async Task ChangeDirectoryAsync(FtpCommandContext context)
     {
-        string targetDirectory = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
+        var targetDirectory = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         try
         {

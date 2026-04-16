@@ -50,8 +50,8 @@ public class ListCommand : IFtpCommand
     private static async Task ProcessDirectoryListingAsync(FtpCommandContext context)
     {
         var dataStream = await context.Session.DataConnection!.GetStreamAsync();
-        
-        await WriteEntriesAsync(context, dataStream);
+
+        await WriteEntriesAsync(context, dataStream, context.AuthContext.Username ?? "anonymous");
 
         if (dataStream is IAsyncDisposable asyncDisposable)
         {
@@ -63,29 +63,29 @@ public class ListCommand : IFtpCommand
         }
     }
 
-    private static async Task WriteEntriesAsync(FtpCommandContext context, Stream dataStream)
+    private static async Task WriteEntriesAsync(FtpCommandContext context, Stream dataStream, string username)
     {
         // For LIST without arguments, it defaults to the current directory.
         // If arguments are provided, use them as the target path.
-        string targetPath = string.IsNullOrWhiteSpace(context.Arguments) 
-            ? context.Session.CurrentDirectory 
+        var targetPath = string.IsNullOrWhiteSpace(context.Arguments)
+            ? context.Session.CurrentDirectory
             : PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
-        using var writer = new StreamWriter(dataStream, Encoding.UTF8, leaveOpen: true);
+        await using var writer = new StreamWriter(dataStream, Encoding.UTF8, leaveOpen: true);
         var entries = await context.FileSystem.GetEntriesAsync(context.AuthContext, targetPath);
-        
+
         foreach (var entry in entries)
         {
-            await WriteEntryAsync(writer, entry);
+            await WriteEntryAsync(writer, entry, username);
         }
-        
+
         await writer.FlushAsync();
     }
 
-    private static async Task WriteEntryAsync(StreamWriter writer, FileSystemEntry entry)
+    private static async Task WriteEntryAsync(StreamWriter writer, FileSystemEntry entry, string username)
     {
-        string type = entry.IsDirectory ? "d" : "-";
-        string line = $"{type}rw-r--r-- 1 ftp ftp {entry.Size} {entry.LastModified:MMM dd HH:mm} {entry.Name}\r\n";
+        var type = entry.IsDirectory ? "d" : "-";
+        var line = $"{type}rw-r--r-- 1 {username} {username} {entry.Size} {entry.LastModified:MMM dd HH:mm} {entry.Name}\r\n";
         await writer.WriteAsync(line);
     }
 }

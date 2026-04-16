@@ -31,7 +31,7 @@ public class RmdCommand : IFtpCommand
 
     private static async Task RemoveDirectoryAsync(FtpCommandContext context)
     {
-        string targetDir = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
+        var targetDir = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         try
         {

@@ -38,7 +38,7 @@ public class StorCommand : IFtpCommand
 
     private static async Task ProcessStoreAsync(FtpCommandContext context)
     {
-        string targetFile = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
+        var targetFile = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         await context.Session.SendResponseAsync(150, "Ok to send data.");
 

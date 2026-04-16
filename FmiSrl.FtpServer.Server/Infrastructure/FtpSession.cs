@@ -35,7 +35,7 @@ public class FtpSession : IFtpSession
 
     /// <inheritdoc/>
     public string CurrentDirectory { get; set; }
-    
+
     /// <inheritdoc/>
     public EndPoint RemoteEndPoint => new IPEndPoint(IPAddress.Parse(_client.Ip), 0); // Placeholder port
 
@@ -57,7 +57,7 @@ public class FtpSession : IFtpSession
     /// <inheritdoc/>
     public Task SendResponseAsync(string rawResponse)
     {
-        byte[] data = Encoding.UTF8.GetBytes(rawResponse);
+        var data = Encoding.UTF8.GetBytes(rawResponse);
         _client.Send(data);
         return Task.CompletedTask;
     }

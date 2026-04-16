@@ -38,7 +38,7 @@ public class RetrCommand : IFtpCommand
 
     private static async Task ProcessRetrieveAsync(FtpCommandContext context)
     {
-        string targetFile = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
+        var targetFile = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         if (!await context.FileSystem.FileExistsAsync(context.AuthContext, targetFile))
         {

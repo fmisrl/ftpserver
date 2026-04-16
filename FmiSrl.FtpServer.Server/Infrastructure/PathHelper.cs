@@ -13,7 +13,7 @@ public static class PathHelper
     /// <returns>A normalized absolute FTP path.</returns>
     public static string NormalizePath(string currentDirectory, string path)
     {
-        string absolutePath = path.StartsWith('/') 
+        var absolutePath = path.StartsWith('/') 
             ? path 
             : $"{currentDirectory.TrimEnd('/')}/{path}";
 

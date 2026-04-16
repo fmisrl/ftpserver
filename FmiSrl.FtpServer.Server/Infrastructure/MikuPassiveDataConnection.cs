@@ -29,9 +29,9 @@ public class MikuPassiveDataConnection : IFtpDataConnection
     public MikuPassiveDataConnection(string ip, int minPort, int maxPort)
     {
         // Try to find a free port in the specified range
-        bool bound = false;
+        var bound = false;
         
-        for (int portToTry = minPort; portToTry <= maxPort; portToTry++)
+        for (var portToTry = minPort; portToTry <= maxPort; portToTry++)
         {
             try
             {

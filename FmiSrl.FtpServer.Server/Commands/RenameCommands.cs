@@ -10,7 +10,7 @@ public class RenameCommands : IFtpCommand
 {
     /// <inheritdoc/>
     public string[] Verbs => ["RNFR", "RNTO"];
-    
+
     private string? _rnfrPath;
 
     /// <inheritdoc/>
@@ -53,7 +53,7 @@ public class RenameCommands : IFtpCommand
             return;
         }
 
-        string rntoPath = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
+        var rntoPath = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         try
         {
