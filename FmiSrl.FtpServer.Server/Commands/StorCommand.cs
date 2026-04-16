@@ -1,12 +1,18 @@
 using FmiSrl.FtpServer.Server.Abstractions;
+using FmiSrl.FtpServer.Server.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace FmiSrl.FtpServer.Server.Commands;
 
+/// <summary>
+/// Implements the STOR (Store) command to upload a file to the server.
+/// </summary>
 public class StorCommand : IFtpCommand
 {
+    /// <inheritdoc/>
     public string[] Verbs => ["STOR"];
 
+    /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
         if (!context.Session.IsAuthenticated)
@@ -27,31 +33,18 @@ public class StorCommand : IFtpCommand
             return;
         }
 
-        string targetFile = context.Arguments;
-        
-        // Handle relative vs absolute paths
-        if (!targetFile.StartsWith('/'))
-        {
-            targetFile = context.Session.CurrentDirectory.TrimEnd('/') + '/' + targetFile;
-        }
+        await ProcessStoreAsync(context);
+    }
+
+    private static async Task ProcessStoreAsync(FtpCommandContext context)
+    {
+        string targetFile = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         await context.Session.SendResponseAsync(150, "Ok to send data.");
 
         try
         {
-            var dataStream = await context.Session.DataConnection.GetStreamAsync();
-            using (var fileStream = await context.FileSystem.OpenWriteAsync(context.AuthContext, targetFile))
-            {
-                context.Logger.LogInformation("Starting upload of {TargetFile}...", targetFile);
-                await dataStream.CopyToAsync(fileStream);
-                await fileStream.FlushAsync();
-                context.Logger.LogInformation("Finished upload of {TargetFile}.", targetFile);
-            }
-            
-            if (dataStream is IAsyncDisposable ad) await ad.DisposeAsync();
-            else dataStream.Dispose();
-
-            await context.Session.SendResponseAsync(226, "Transfer complete.");
+            await ReceiveFileAsync(context, targetFile);
         }
         catch (Exception ex)
         {
@@ -60,8 +53,32 @@ public class StorCommand : IFtpCommand
         }
         finally
         {
-            await context.Session.DataConnection.DisposeAsync();
+            await context.Session.DataConnection!.DisposeAsync();
             context.Session.DataConnection = null;
         }
+    }
+
+    private static async Task ReceiveFileAsync(FtpCommandContext context, string targetFile)
+    {
+        var dataStream = await context.Session.DataConnection!.GetStreamAsync();
+        
+        using (var fileStream = await context.FileSystem.OpenWriteAsync(context.AuthContext, targetFile))
+        {
+            context.Logger.LogInformation("Starting upload of {TargetFile}...", targetFile);
+            await dataStream.CopyToAsync(fileStream);
+            await fileStream.FlushAsync();
+            context.Logger.LogInformation("Finished upload of {TargetFile}.", targetFile);
+        }
+        
+        if (dataStream is IAsyncDisposable asyncDisposable)
+        {
+            await asyncDisposable.DisposeAsync();
+        }
+        else
+        {
+            dataStream.Dispose();
+        }
+
+        await context.Session.SendResponseAsync(226, "Transfer complete.");
     }
 }

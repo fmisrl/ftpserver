@@ -1,5 +1,3 @@
-using FmiSrl.FtpServer.Server.Abstractions;
-using FmiSrl.FtpServer.Server.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -35,68 +33,5 @@ public static class FtpServerServiceCollectionExtensions
         services.TryAddSingleton<FtpServer>();
 
         return new FtpServerBuilder(services);
-    }
-}
-
-/// <summary>
-/// A builder for configuring FTP server services.
-/// </summary>
-public interface IFtpServerBuilder
-{
-    /// <summary>
-    /// Gets the <see cref="IServiceCollection"/> where the FTP server services are configured.
-    /// </summary>
-    IServiceCollection Services { get; }
-}
-
-internal sealed class FtpServerBuilder(IServiceCollection services) : IFtpServerBuilder
-{
-    public IServiceCollection Services { get; } = services;
-}
-
-/// <summary>
-/// Extension methods for <see cref="IFtpServerBuilder"/>.
-/// </summary>
-public static class FtpServerBuilderExtensions
-{
-    /// <summary>
-    /// Configures the FTP server to use the specified file system provider.
-    /// </summary>
-    public static IFtpServerBuilder UseFileSystemProvider<T>(this IFtpServerBuilder builder)
-        where T : class, IFileSystemProvider
-    {
-        builder.Services.Replace(ServiceDescriptor.Singleton<IFileSystemProvider, T>());
-        return builder;
-    }
-
-    /// <summary>
-    /// Configures the FTP server to use the specified file system provider instance.
-    /// </summary>
-    public static IFtpServerBuilder UseFileSystemProvider(this IFtpServerBuilder builder, IFileSystemProvider provider)
-    {
-        builder.Services.Replace(ServiceDescriptor.Singleton(provider));
-        return builder;
-    }
-
-    /// <summary>
-    /// Configures the FTP server to use the specified authentication provider.
-    /// </summary>
-    public static IFtpServerBuilder UseAuthenticationProvider<T>(this IFtpServerBuilder builder)
-        where T : class, IAuthenticationProvider
-    {
-        builder.Services.Replace(ServiceDescriptor.Singleton<IAuthenticationProvider, T>());
-        return builder;
-    }
-
-    /// <summary>
-    /// Configures the FTP server to use the specified authentication provider instance.
-    /// </summary>
-    public static IFtpServerBuilder UseAuthenticationProvider(
-        this IFtpServerBuilder builder,
-        IAuthenticationProvider provider
-    )
-    {
-        builder.Services.Replace(ServiceDescriptor.Singleton(provider));
-        return builder;
     }
 }

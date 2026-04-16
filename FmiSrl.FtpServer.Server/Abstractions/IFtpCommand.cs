@@ -1,22 +1,20 @@
-using Microsoft.Extensions.Logging;
-
 namespace FmiSrl.FtpServer.Server.Abstractions;
 
+/// <summary>
+/// Defines the behavior for an FTP command.
+/// </summary>
 public interface IFtpCommand
 {
+    /// <summary>
+    /// Gets the collection of verbs supported by this command.
+    /// </summary>
+    /// <value>An array of <see cref="string"/> representing the supported verbs.</value>
     string[] Verbs { get; }
-    Task ExecuteAsync(FtpCommandContext context);
-}
 
-public record FtpCommandContext(
-    IFtpSession Session,
-    string Verb,
-    string Arguments,
-    IFileSystemProvider FileSystem,
-    IAuthenticationProvider Authenticator,
-    FtpServerConfigurationOptions Configuration,
-    ILogger Logger
-)
-{
-    public FtpAuthenticationContext AuthContext => new(Session.Username);
+    /// <summary>
+    /// Executes the FTP command asynchronously with the specified context.
+    /// </summary>
+    /// <param name="context">The <see cref="FtpCommandContext"/> for the command execution.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    Task ExecuteAsync(FtpCommandContext context);
 }

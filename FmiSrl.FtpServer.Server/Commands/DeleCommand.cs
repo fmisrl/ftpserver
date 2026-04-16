@@ -1,11 +1,17 @@
 using FmiSrl.FtpServer.Server.Abstractions;
+using FmiSrl.FtpServer.Server.Infrastructure;
 
 namespace FmiSrl.FtpServer.Server.Commands;
 
+/// <summary>
+/// Implements the DELE command to delete a file.
+/// </summary>
 public class DeleCommand : IFtpCommand
 {
+    /// <inheritdoc/>
     public string[] Verbs => ["DELE"];
 
+    /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
         if (!context.Session.IsAuthenticated)
@@ -20,27 +26,32 @@ public class DeleCommand : IFtpCommand
             return;
         }
 
-        string targetFile = context.Arguments;
-        if (!targetFile.StartsWith('/'))
-        {
-            targetFile = context.Session.CurrentDirectory.TrimEnd('/') + '/' + targetFile;
-        }
+        await DeleteFileAsync(context);
+    }
+
+    private static async Task DeleteFileAsync(FtpCommandContext context)
+    {
+        string targetFile = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         try
         {
-            if (await context.FileSystem.FileExistsAsync(context.AuthContext, targetFile))
-            {
-                await context.FileSystem.DeleteFileAsync(context.AuthContext, targetFile);
-                await context.Session.SendResponseAsync(250, "File deleted successfully.");
-            }
-            else
-            {
-                await context.Session.SendResponseAsync(550, "File not found.");
-            }
+            await TryPerformDeleteAsync(context, targetFile);
         }
         catch (Exception ex)
         {
             await context.Session.SendResponseAsync(550, $"Error deleting file: {ex.Message}");
         }
+    }
+
+    private static async Task TryPerformDeleteAsync(FtpCommandContext context, string targetFile)
+    {
+        if (!await context.FileSystem.FileExistsAsync(context.AuthContext, targetFile))
+        {
+            await context.Session.SendResponseAsync(550, "File not found.");
+            return;
+        }
+
+        await context.FileSystem.DeleteFileAsync(context.AuthContext, targetFile);
+        await context.Session.SendResponseAsync(250, "File deleted successfully.");
     }
 }

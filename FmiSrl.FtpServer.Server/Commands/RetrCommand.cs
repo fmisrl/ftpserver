@@ -1,12 +1,18 @@
 using FmiSrl.FtpServer.Server.Abstractions;
+using FmiSrl.FtpServer.Server.Infrastructure;
 using Microsoft.Extensions.Logging;
 
 namespace FmiSrl.FtpServer.Server.Commands;
 
+/// <summary>
+/// Implements the RETR (Retrieve) command to download a file from the server.
+/// </summary>
 public class RetrCommand : IFtpCommand
 {
+    /// <inheritdoc/>
     public string[] Verbs => ["RETR"];
 
+    /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
         if (!context.Session.IsAuthenticated)
@@ -27,12 +33,12 @@ public class RetrCommand : IFtpCommand
             return;
         }
 
-        string targetFile = context.Arguments;
-        
-        if (!targetFile.StartsWith('/'))
-        {
-            targetFile = context.Session.CurrentDirectory.TrimEnd('/') + '/' + targetFile;
-        }
+        await ProcessRetrieveAsync(context);
+    }
+
+    private static async Task ProcessRetrieveAsync(FtpCommandContext context)
+    {
+        string targetFile = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         if (!await context.FileSystem.FileExistsAsync(context.AuthContext, targetFile))
         {
@@ -44,19 +50,7 @@ public class RetrCommand : IFtpCommand
 
         try
         {
-            var dataStream = await context.Session.DataConnection.GetStreamAsync();
-            using (var fileStream = await context.FileSystem.OpenReadAsync(context.AuthContext, targetFile))
-            {
-                context.Logger.LogInformation("Starting transfer of {TargetFile} ({Length} bytes)...", targetFile, fileStream.Length);
-                await fileStream.CopyToAsync(dataStream);
-                context.Logger.LogInformation("Finished copying {TargetFile} to data stream.", targetFile);
-            }
-            
-            // Dispose the stream first to trigger Flush and proper closing
-            if (dataStream is IAsyncDisposable ad) await ad.DisposeAsync();
-            else dataStream.Dispose();
-
-            await context.Session.SendResponseAsync(226, "Transfer complete.");
+            await TransferFileAsync(context, targetFile);
         }
         catch (Exception ex)
         {
@@ -65,8 +59,31 @@ public class RetrCommand : IFtpCommand
         }
         finally
         {
-            await context.Session.DataConnection.DisposeAsync();
+            await context.Session.DataConnection!.DisposeAsync();
             context.Session.DataConnection = null;
         }
+    }
+
+    private static async Task TransferFileAsync(FtpCommandContext context, string targetFile)
+    {
+        var dataStream = await context.Session.DataConnection!.GetStreamAsync();
+        
+        using (var fileStream = await context.FileSystem.OpenReadAsync(context.AuthContext, targetFile))
+        {
+            context.Logger.LogInformation("Starting transfer of {TargetFile} ({Length} bytes)...", targetFile, fileStream.Length);
+            await fileStream.CopyToAsync(dataStream);
+            context.Logger.LogInformation("Finished copying {TargetFile} to data stream.", targetFile);
+        }
+        
+        if (dataStream is IAsyncDisposable asyncDisposable)
+        {
+            await asyncDisposable.DisposeAsync();
+        }
+        else
+        {
+            dataStream.Dispose();
+        }
+
+        await context.Session.SendResponseAsync(226, "Transfer complete.");
     }
 }

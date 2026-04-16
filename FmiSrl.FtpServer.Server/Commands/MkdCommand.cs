@@ -1,11 +1,17 @@
 using FmiSrl.FtpServer.Server.Abstractions;
+using FmiSrl.FtpServer.Server.Infrastructure;
 
 namespace FmiSrl.FtpServer.Server.Commands;
 
+/// <summary>
+/// Implements the MKD (Make Directory) command.
+/// </summary>
 public class MkdCommand : IFtpCommand
 {
+    /// <inheritdoc/>
     public string[] Verbs => ["MKD"];
 
+    /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
         if (!context.Session.IsAuthenticated)
@@ -20,28 +26,32 @@ public class MkdCommand : IFtpCommand
             return;
         }
 
-        string targetDirectory = context.Arguments;
-        
-        // Handle relative vs absolute paths simply
-        if (!targetDirectory.StartsWith('/'))
-        {
-            targetDirectory = context.Session.CurrentDirectory.TrimEnd('/') + '/' + targetDirectory;
-        }
+        await CreateDirectoryAsync(context);
+    }
+
+    private static async Task CreateDirectoryAsync(FtpCommandContext context)
+    {
+        string targetDirectory = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         try
         {
-            if (await context.FileSystem.DirectoryExistsAsync(context.AuthContext, targetDirectory))
-            {
-                await context.Session.SendResponseAsync(550, "Directory already exists.");
-                return;
-            }
-
-            await context.FileSystem.CreateDirectoryAsync(context.AuthContext, targetDirectory);
-            await context.Session.SendResponseAsync(257, $"\"{targetDirectory}\" directory created.");
+            await TryPerformCreateAsync(context, targetDirectory);
         }
         catch (Exception ex)
         {
             await context.Session.SendResponseAsync(550, $"Failed to create directory: {ex.Message}");
         }
+    }
+
+    private static async Task TryPerformCreateAsync(FtpCommandContext context, string targetDirectory)
+    {
+        if (await context.FileSystem.DirectoryExistsAsync(context.AuthContext, targetDirectory))
+        {
+            await context.Session.SendResponseAsync(550, "Directory already exists.");
+            return;
+        }
+
+        await context.FileSystem.CreateDirectoryAsync(context.AuthContext, targetDirectory);
+        await context.Session.SendResponseAsync(257, $"\"{targetDirectory}\" directory created.");
     }
 }

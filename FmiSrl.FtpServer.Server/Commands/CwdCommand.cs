@@ -1,11 +1,17 @@
 using FmiSrl.FtpServer.Server.Abstractions;
+using FmiSrl.FtpServer.Server.Infrastructure;
 
 namespace FmiSrl.FtpServer.Server.Commands;
 
+/// <summary>
+/// Implements the CWD (Change Working Directory) command.
+/// </summary>
 public class CwdCommand : IFtpCommand
 {
+    /// <inheritdoc/>
     public string[] Verbs => ["CWD"];
 
+    /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
         if (!context.Session.IsAuthenticated)
@@ -20,48 +26,32 @@ public class CwdCommand : IFtpCommand
             return;
         }
 
-        string targetDirectory = context.Arguments;
-        
-        // Handle relative vs absolute paths
-        if (!targetDirectory.StartsWith('/'))
-        {
-            targetDirectory = context.Session.CurrentDirectory.TrimEnd('/') + '/' + targetDirectory;
-        }
+        await ChangeDirectoryAsync(context);
+    }
 
-        // Normalize path (handle ".." and ".")
-        var parts = targetDirectory.Split('/', StringSplitOptions.RemoveEmptyEntries);
-        var resolved = new List<string>();
-        foreach (var part in parts)
-        {
-            if (part == ".") continue;
-            if (part == "..") 
-            { 
-                if (resolved.Count > 0) resolved.RemoveAt(resolved.Count - 1); 
-            }
-            else 
-            {
-                resolved.Add(part);
-            }
-        }
-        
-        targetDirectory = "/" + string.Join('/', resolved);
+    private static async Task ChangeDirectoryAsync(FtpCommandContext context)
+    {
+        string targetDirectory = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
         try
         {
-            // Root directory always exists virtually
-            if (targetDirectory == "/" || await context.FileSystem.DirectoryExistsAsync(context.AuthContext, targetDirectory))
-            {
-                context.Session.CurrentDirectory = targetDirectory;
-                await context.Session.SendResponseAsync(250, "Directory successfully changed.");
-            }
-            else
-            {
-                await context.Session.SendResponseAsync(550, "Failed to change directory. Directory not found.");
-            }
+            await TryUpdateSessionDirectoryAsync(context, targetDirectory);
         }
         catch (Exception ex)
         {
             await context.Session.SendResponseAsync(550, $"Failed to change directory: {ex.Message}");
         }
+    }
+
+    private static async Task TryUpdateSessionDirectoryAsync(FtpCommandContext context, string targetDirectory)
+    {
+        if (targetDirectory == "/" || await context.FileSystem.DirectoryExistsAsync(context.AuthContext, targetDirectory))
+        {
+            context.Session.CurrentDirectory = targetDirectory;
+            await context.Session.SendResponseAsync(250, "Directory successfully changed.");
+            return;
+        }
+
+        await context.Session.SendResponseAsync(550, "Failed to change directory. Directory not found.");
     }
 }
