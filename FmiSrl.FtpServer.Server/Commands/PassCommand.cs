@@ -11,6 +11,9 @@ public class PassCommand : IFtpCommand
     public string[] Verbs => ["PASS"];
 
     /// <inheritdoc/>
+    public bool RequiresAuthentication => false;
+
+    /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
         if (context.Session.Username == null)

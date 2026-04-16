@@ -11,6 +11,9 @@ public class NoopCommand : IFtpCommand
     public string[] Verbs => ["NOOP"];
 
     /// <inheritdoc/>
+    public bool RequiresAuthentication => false;
+
+    /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
         await context.Session.SendResponseAsync(200, "NOOP OK.");

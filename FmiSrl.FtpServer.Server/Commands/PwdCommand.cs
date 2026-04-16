@@ -11,14 +11,10 @@ public class PwdCommand : IFtpCommand
     public string[] Verbs => ["PWD"];
 
     /// <inheritdoc/>
-    public async Task ExecuteAsync(FtpCommandContext context)
-    {
-        if (!context.Session.IsAuthenticated)
-        {
-            await context.Session.SendResponseAsync(530, "Not logged in.");
-            return;
-        }
+    public bool RequiresAuthentication => true;
 
-        await context.Session.SendResponseAsync(257, $"\"{context.Session.CurrentDirectory}\" is current directory.");
+    /// <inheritdoc/>
+    public async Task ExecuteAsync(FtpCommandContext context)
+    {        await context.Session.SendResponseAsync(257, $"\"{context.Session.CurrentDirectory}\" is current directory.");
     }
 }

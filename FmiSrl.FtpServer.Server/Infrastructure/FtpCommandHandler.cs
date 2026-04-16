@@ -28,13 +28,18 @@ public class FtpCommandHandler
     /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task HandleCommandAsync(FtpCommandContext context)
     {
-        if (_commands.TryGetValue(context.Verb, out var command))
-        {
-            await command.ExecuteAsync(context);
-        }
-        else
+        if (!_commands.TryGetValue(context.Verb, out var command))
         {
             await context.Session.SendResponseAsync(502, "Command not implemented.");
+            return;
         }
+
+        if (command.RequiresAuthentication && !context.Session.IsAuthenticated)
+        {
+            await context.Session.SendResponseAsync(530, "Not logged in.");
+            return;
+        }
+
+        await command.ExecuteAsync(context);
     }
 }

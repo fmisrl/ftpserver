@@ -12,15 +12,11 @@ public class RmdCommand : IFtpCommand
     public string[] Verbs => ["RMD"];
 
     /// <inheritdoc/>
-    public async Task ExecuteAsync(FtpCommandContext context)
-    {
-        if (!context.Session.IsAuthenticated)
-        {
-            await context.Session.SendResponseAsync(530, "Not logged in.");
-            return;
-        }
+    public bool RequiresAuthentication => true;
 
-        if (string.IsNullOrWhiteSpace(context.Arguments))
+    /// <inheritdoc/>
+    public async Task ExecuteAsync(FtpCommandContext context)
+    {        if (string.IsNullOrWhiteSpace(context.Arguments))
         {
             await context.Session.SendResponseAsync(501, "Syntax error in parameters or arguments.");
             return;

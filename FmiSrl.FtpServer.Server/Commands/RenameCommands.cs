@@ -11,18 +11,14 @@ public class RenameCommands : IFtpCommand
     /// <inheritdoc/>
     public string[] Verbs => ["RNFR", "RNTO"];
 
+    /// <inheritdoc/>
+    public bool RequiresAuthentication => true;
+
     private string? _rnfrPath;
 
     /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
-    {
-        if (!context.Session.IsAuthenticated)
-        {
-            await context.Session.SendResponseAsync(530, "Not logged in.");
-            return;
-        }
-
-        if (context.Verb == "RNFR")
+    {        if (context.Verb == "RNFR")
         {
             await HandleRenameFromAsync(context);
         }

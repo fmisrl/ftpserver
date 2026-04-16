@@ -11,6 +11,9 @@ public class SystCommand : IFtpCommand
     public string[] Verbs => ["SYST"];
 
     /// <inheritdoc/>
+    public bool RequiresAuthentication => false;
+
+    /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
         await context.Session.SendResponseAsync(215, "UNIX Type: L8");

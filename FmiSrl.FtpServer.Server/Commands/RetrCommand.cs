@@ -13,15 +13,11 @@ public class RetrCommand : IFtpCommand
     public string[] Verbs => ["RETR"];
 
     /// <inheritdoc/>
-    public async Task ExecuteAsync(FtpCommandContext context)
-    {
-        if (!context.Session.IsAuthenticated)
-        {
-            await context.Session.SendResponseAsync(530, "Not logged in.");
-            return;
-        }
+    public bool RequiresAuthentication => true;
 
-        if (context.Session.DataConnection == null)
+    /// <inheritdoc/>
+    public async Task ExecuteAsync(FtpCommandContext context)
+    {        if (context.Session.DataConnection == null)
         {
             await context.Session.SendResponseAsync(425, "Use PASV or PORT first.");
             return;

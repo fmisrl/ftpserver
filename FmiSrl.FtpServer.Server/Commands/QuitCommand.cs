@@ -11,6 +11,9 @@ public class QuitCommand : IFtpCommand
     public string[] Verbs => ["QUIT"];
 
     /// <inheritdoc/>
+    public bool RequiresAuthentication => false;
+
+    /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
         await context.Session.SendResponseAsync(221, "Goodbye.");

@@ -11,6 +11,9 @@ public class OptsCommand : IFtpCommand
     public string[] Verbs => ["OPTS"];
 
     /// <inheritdoc/>
+    public bool RequiresAuthentication => false;
+
+    /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
         if (context.Arguments.Equals("UTF8 ON", StringComparison.OrdinalIgnoreCase))

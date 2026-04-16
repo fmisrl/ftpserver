@@ -16,15 +16,11 @@ public class PasvCommand : IFtpCommand
     public string[] Verbs => ["PASV"];
 
     /// <inheritdoc/>
-    public async Task ExecuteAsync(FtpCommandContext context)
-    {
-        if (!context.Session.IsAuthenticated)
-        {
-            await context.Session.SendResponseAsync(530, "Not logged in.");
-            return;
-        }
+    public bool RequiresAuthentication => true;
 
-        await PrepareDataConnectionAsync(context);
+    /// <inheritdoc/>
+    public async Task ExecuteAsync(FtpCommandContext context)
+    {        await PrepareDataConnectionAsync(context);
     }
 
     private static async Task PrepareDataConnectionAsync(FtpCommandContext context)

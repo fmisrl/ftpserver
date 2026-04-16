@@ -11,6 +11,9 @@ public class UserCommand : IFtpCommand
     public string[] Verbs => ["USER"];
 
     /// <inheritdoc/>
+    public bool RequiresAuthentication => false;
+
+    /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
         if (string.IsNullOrWhiteSpace(context.Arguments))
