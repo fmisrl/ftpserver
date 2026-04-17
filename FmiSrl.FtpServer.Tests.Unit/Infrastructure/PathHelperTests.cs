@@ -16,7 +16,11 @@ public class PathHelperTests
     [InlineData("/dir1", "./test", "/dir1/test")]
     [InlineData("/", "..", "/")]
     [InlineData("/dir1", "subdir/../other", "/dir1/other")]
-    public void When_normalizing_path_should_resolve_relative_components(string currentDir, string path, string expected)
+    public void When_normalizing_path_should_resolve_relative_components(
+        string currentDir,
+        string path,
+        string expected
+    )
     {
         // Act
         var result = PathHelper.NormalizePath(currentDir, path);

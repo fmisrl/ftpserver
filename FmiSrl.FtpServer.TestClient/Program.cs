@@ -31,14 +31,14 @@ try
     });
 
     builder.Services.AddFtpServer(options =>
-    {
-        options.ServerName = "FmiSrl Test FTP Server";
-        options.FtpPort = 21;
-        options.PasvMinPort = 50000;
-        options.PasvMaxPort = 51000;
-    })
-    .UseFileSystemProvider<PhysicalFileSystemProvider>()
-    .UseAuthenticationProvider<SimpleAuthenticationProvider>();
+        {
+            options.ServerName = "FmiSrl Test FTP Server";
+            options.FtpPort = 21;
+            options.PasvMinPort = 50000;
+            options.PasvMaxPort = 51000;
+        })
+        .UseFileSystemProvider<PhysicalFileSystemProvider>()
+        .UseAuthenticationProvider<SimpleAuthenticationProvider>();
 
     var host = builder.Build();
 

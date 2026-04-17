@@ -17,7 +17,8 @@ public class ListCommand : IFtpCommand
 
     /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
-    {        if (context.Session.DataConnection == null)
+    {
+        if (context.Session.DataConnection == null)
         {
             await context.Session.SendResponseAsync(425, "Use PASV or PORT first.");
             return;
@@ -81,7 +82,8 @@ public class ListCommand : IFtpCommand
     private static async Task WriteEntryAsync(StreamWriter writer, FileSystemEntry entry, string username)
     {
         var type = entry.IsDirectory ? "d" : "-";
-        var line = $"{type}rw-r--r-- 1 {username} {username} {entry.Size} {entry.LastModified:MMM dd HH:mm} {entry.Name}\r\n";
+        var line =
+            $"{type}rw-r--r-- 1 {username} {username} {entry.Size} {entry.LastModified:MMM dd HH:mm} {entry.Name}\r\n";
         await writer.WriteAsync(line);
     }
 }

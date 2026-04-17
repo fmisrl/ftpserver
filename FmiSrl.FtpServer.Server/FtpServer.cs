@@ -42,7 +42,7 @@ public class FtpServer(
 
     private void RegisterCommands()
     {
-        IFtpCommand[] commands = 
+        IFtpCommand[] commands =
         [
             new UserCommand(),
             new PassCommand(),
@@ -77,7 +77,7 @@ public class FtpServer(
     /// </summary>
     /// <returns>A task that represents the asynchronous operation of starting the server.</returns>
     /// <remarks>
-    /// Initializes command registration, sets up event handlers for client connections, 
+    /// Initializes command registration, sets up event handlers for client connections,
     /// data reception, and disconnections, and then begins listening on the configured IP and port.
     /// </remarks>
     public async Task StartAsync()
@@ -94,7 +94,7 @@ public class FtpServer(
         _netServer.OnClientDataReceived += (client, data) => _ = HandleClientDataReceivedAsync(client, data);
         _netServer.OnClientDisconnected += (client, reason) => HandleClientDisconnected(client, reason);
         _netServer.OnError += exception => HandleError(exception);
-        
+
         _netServer.Start(_configurationOptions.ListeningIp, _configurationOptions.FtpPort);
         await Task.CompletedTask;
     }
@@ -159,7 +159,10 @@ public class FtpServer(
 
     private async Task ExecuteCommandAsync(NetClient client, FtpSession session, string rawRequest)
     {
-        if (string.IsNullOrWhiteSpace(rawRequest)) return;
+        if (string.IsNullOrWhiteSpace(rawRequest))
+        {
+            return;
+        }
 
         _logger.LogInformation("Received [{Id}]: {RawRequest}", client.Id, rawRequest);
 
@@ -173,7 +176,7 @@ public class FtpServer(
             _authenticationProvider,
             _configurationOptions,
             _logger);
-            
+
         await _commandHandler.HandleCommandAsync(context);
 
         if (verb == "QUIT")

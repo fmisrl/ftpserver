@@ -17,7 +17,8 @@ public class CwdCommand : IFtpCommand
 
     /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
-    {        if (string.IsNullOrWhiteSpace(context.Arguments))
+    {
+        if (string.IsNullOrWhiteSpace(context.Arguments))
         {
             await context.Session.SendResponseAsync(501, "Syntax error in parameters or arguments.");
             return;
@@ -43,7 +44,8 @@ public class CwdCommand : IFtpCommand
 
     private static async Task TryUpdateSessionDirectoryAsync(FtpCommandContext context, string targetDirectory)
     {
-        if (targetDirectory == "/" || await context.FileSystem.DirectoryExistsAsync(context.AuthContext, targetDirectory))
+        if (targetDirectory == "/"
+            || await context.FileSystem.DirectoryExistsAsync(context.AuthContext, targetDirectory))
         {
             context.Session.CurrentDirectory = targetDirectory;
             await context.Session.SendResponseAsync(250, "Directory successfully changed.");

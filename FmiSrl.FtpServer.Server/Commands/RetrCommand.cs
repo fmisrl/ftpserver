@@ -17,7 +17,8 @@ public class RetrCommand : IFtpCommand
 
     /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
-    {        if (context.Session.DataConnection == null)
+    {
+        if (context.Session.DataConnection == null)
         {
             await context.Session.SendResponseAsync(425, "Use PASV or PORT first.");
             return;
@@ -63,14 +64,17 @@ public class RetrCommand : IFtpCommand
     private static async Task TransferFileAsync(FtpCommandContext context, string targetFile)
     {
         var dataStream = await context.Session.DataConnection!.GetStreamAsync();
-        
+
         using (var fileStream = await context.FileSystem.OpenReadAsync(context.AuthContext, targetFile))
         {
-            context.Logger.LogInformation("Starting transfer of {TargetFile} ({Length} bytes)...", targetFile, fileStream.Length);
+            context.Logger.LogInformation(
+                "Starting transfer of {TargetFile} ({Length} bytes)...",
+                targetFile,
+                fileStream.Length);
             await fileStream.CopyToAsync(dataStream);
             context.Logger.LogInformation("Finished copying {TargetFile} to data stream.", targetFile);
         }
-        
+
         if (dataStream is IAsyncDisposable asyncDisposable)
         {
             await asyncDisposable.DisposeAsync();

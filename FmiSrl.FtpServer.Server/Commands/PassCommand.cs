@@ -22,7 +22,8 @@ public class PassCommand : IFtpCommand
             return;
         }
 
-        var isAuthenticated = await context.Authenticator.AuthenticateAsync(context.Session.Username, context.Arguments);
+        var isAuthenticated =
+            await context.Authenticator.AuthenticateAsync(context.Session.Username, context.Arguments);
 
         if (isAuthenticated)
         {

@@ -15,6 +15,7 @@ public class PwdCommand : IFtpCommand
 
     /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
-    {        await context.Session.SendResponseAsync(257, $"\"{context.Session.CurrentDirectory}\" is current directory.");
+    {
+        await context.Session.SendResponseAsync(257, $"\"{context.Session.CurrentDirectory}\" is current directory.");
     }
 }

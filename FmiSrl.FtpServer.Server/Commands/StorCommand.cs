@@ -17,7 +17,8 @@ public class StorCommand : IFtpCommand
 
     /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
-    {        if (context.Session.DataConnection == null)
+    {
+        if (context.Session.DataConnection == null)
         {
             await context.Session.SendResponseAsync(425, "Use PASV or PORT first.");
             return;
@@ -57,7 +58,7 @@ public class StorCommand : IFtpCommand
     private static async Task ReceiveFileAsync(FtpCommandContext context, string targetFile)
     {
         var dataStream = await context.Session.DataConnection!.GetStreamAsync();
-        
+
         using (var fileStream = await context.FileSystem.OpenWriteAsync(context.AuthContext, targetFile))
         {
             context.Logger.LogInformation("Starting upload of {TargetFile}...", targetFile);
@@ -65,7 +66,7 @@ public class StorCommand : IFtpCommand
             await fileStream.FlushAsync();
             context.Logger.LogInformation("Finished upload of {TargetFile}.", targetFile);
         }
-        
+
         if (dataStream is IAsyncDisposable asyncDisposable)
         {
             await asyncDisposable.DisposeAsync();

@@ -20,7 +20,8 @@ public class PasvCommand : IFtpCommand
 
     /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
-    {        await PrepareDataConnectionAsync(context);
+    {
+        await PrepareDataConnectionAsync(context);
     }
 
     private static async Task PrepareDataConnectionAsync(FtpCommandContext context)

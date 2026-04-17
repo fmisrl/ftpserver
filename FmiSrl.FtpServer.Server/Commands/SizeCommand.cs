@@ -17,7 +17,8 @@ public class SizeCommand : IFtpCommand
 
     /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
-    {        await ProcessSizeRequestAsync(context);
+    {
+        await ProcessSizeRequestAsync(context);
     }
 
     private static async Task ProcessSizeRequestAsync(FtpCommandContext context)

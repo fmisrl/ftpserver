@@ -36,13 +36,13 @@ public interface IFtpSession
     /// </summary>
     /// <value>The <see cref="EndPoint"/> of the remote client.</value>
     EndPoint RemoteEndPoint { get; }
-    
+
     /// <summary>
     /// Gets or sets the data connection for this session.
     /// </summary>
     /// <value>The <see cref="IFtpDataConnection"/> instance, or <c>null</c> if no data connection is active.</value>
     IFtpDataConnection? DataConnection { get; set; }
-    
+
     /// <summary>
     /// Sends a response with a status code and message to the client asynchronously.
     /// </summary>

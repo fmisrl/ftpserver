@@ -9,12 +9,13 @@ namespace FmiSrl.FtpServer.Server.Infrastructure;
 public class MikuClientStream : Stream
 {
     private readonly NetClient _client;
-    private readonly Channel<byte[]> _readChannel = Channel.CreateBounded<byte[]>(new BoundedChannelOptions(128)
-    {
-        FullMode = BoundedChannelFullMode.Wait,
-        SingleReader = true,
-        SingleWriter = true
-    });
+
+    private readonly Channel<byte[]> _readChannel = Channel.CreateBounded<byte[]>(
+        new BoundedChannelOptions(128)
+        {
+            FullMode = BoundedChannelFullMode.Wait, SingleReader = true, SingleWriter = true
+        });
+
     private byte[]? _currentReadBuffer;
     private int _currentReadBufferPosition;
     private bool _isDisposed;
@@ -63,14 +64,18 @@ public class MikuClientStream : Stream
     public override long Length => throw new NotSupportedException();
 
     /// <inheritdoc/>
-    public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+    public override long Position
+    {
+        get => throw new NotSupportedException();
+        set => throw new NotSupportedException();
+    }
 
     /// <inheritdoc/>
-    public override void Flush() 
+    public override void Flush()
     {
         // Simple wait for library to finish background tasks
         var timeout = 0;
-        while (_client.HasPendingSends && timeout < 200) // 10 seconds max
+        while (_client.HasPendingSends && timeout < 200)// 10 seconds max
         {
             Thread.Sleep(50);
             timeout++;
@@ -89,16 +94,16 @@ public class MikuClientStream : Stream
     }
 
     /// <inheritdoc/>
-    public override int Read(byte[] buffer, int offset, int count)
-    {
-        return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
-    }
+    public override int Read(byte[] buffer, int offset, int count) =>
+        ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
 
     /// <inheritdoc/>
-    public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
-        return await ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
-    }
+    public override async Task<int> ReadAsync(
+        byte[] buffer,
+        int offset,
+        int count,
+        CancellationToken cancellationToken
+    ) => await ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
 
     /// <inheritdoc/>
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
@@ -117,7 +122,7 @@ public class MikuClientStream : Stream
                 }
                 else
                 {
-                    return 0; // EOF
+                    return 0;// EOF
                 }
             }
             catch (ChannelClosedException)
@@ -147,8 +152,11 @@ public class MikuClientStream : Stream
     /// <inheritdoc/>
     public override void Write(byte[] buffer, int offset, int count)
     {
-        if (count == 0) return;
-        
+        if (count == 0)
+        {
+            return;
+        }
+
         // Blocking wait for backpressure
         var backoff = 0;
         while (_client.HasPendingSends && backoff < 100)
@@ -158,20 +166,36 @@ public class MikuClientStream : Stream
         }
 
         var data = new byte[count];
-        Buffer.BlockCopy(buffer, offset, data, 0, count);
+        Buffer.BlockCopy(
+            buffer,
+            offset,
+            data,
+            0,
+            count);
         _client.Send(data);
     }
-    
+
     /// <inheritdoc/>
-    public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+    public override async Task WriteAsync(
+        byte[] buffer,
+        int offset,
+        int count,
+        CancellationToken cancellationToken
+    )
     {
         await WriteAsync(buffer.AsMemory(offset, count), cancellationToken);
     }
 
     /// <inheritdoc/>
-    public override async ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
+    public override async ValueTask WriteAsync(
+        ReadOnlyMemory<byte> buffer,
+        CancellationToken cancellationToken = default
+    )
     {
-        if (buffer.Length == 0) return;
+        if (buffer.Length == 0)
+        {
+            return;
+        }
 
         // Break large writes into smaller chunks to help Miku's internal buffers
         const int chunkSize = 16384;
@@ -179,7 +203,7 @@ public class MikuClientStream : Stream
         while (processed < buffer.Length)
         {
             var toSend = Math.Min(chunkSize, buffer.Length - processed);
-            
+
             // Wait for backpressure
             var backoff = 0;
             while (_client.HasPendingSends && backoff < 50)
@@ -193,18 +217,22 @@ public class MikuClientStream : Stream
             processed += toSend;
         }
     }
-    
+
     /// <inheritdoc/>
     public override async ValueTask DisposeAsync()
     {
-        if (_isDisposed) return;
+        if (_isDisposed)
+        {
+            return;
+        }
         _isDisposed = true;
 
         // Ensure everything is sent before we kill the client
         await FlushAsync(default);
-        await Task.Delay(500); 
-        
-        try { _client.Stop(); } catch { }
+        await Task.Delay(500);
+
+        try { _client.Stop(); }
+        catch {}
         await base.DisposeAsync();
     }
 
@@ -216,7 +244,8 @@ public class MikuClientStream : Stream
             _isDisposed = true;
             Flush();
             Thread.Sleep(500);
-            try { _client.Stop(); } catch { }
+            try { _client.Stop(); }
+            catch {}
         }
         base.Dispose(disposing);
     }

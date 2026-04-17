@@ -27,12 +27,17 @@ public class MikuPassiveDataConnection : IFtpDataConnection
     /// <param name="minPort">The minimum port number in the range of allowed ports.</param>
     /// <param name="maxPort">The maximum port number in the range of allowed ports.</param>
     /// <param name="authorizedClientIp">The IP address authorized to connect to this data port.</param>
-    public MikuPassiveDataConnection(string ip, int minPort, int maxPort, string authorizedClientIp)
+    public MikuPassiveDataConnection(
+        string ip,
+        int minPort,
+        int maxPort,
+        string authorizedClientIp
+    )
     {
         // Try to find a free port in the specified range
-        bool bound = false;
+        var bound = false;
 
-        for (int portToTry = minPort; portToTry <= maxPort; portToTry++)
+        for (var portToTry = minPort; portToTry <= maxPort; portToTry++)
         {
             try
             {
@@ -59,7 +64,8 @@ public class MikuPassiveDataConnection : IFtpDataConnection
         }
 
         _dataServer = new NetServer();
-        _dataServer.OnClientConnected += c => {
+        _dataServer.OnClientConnected += c =>
+        {
             if (c.Ip != authorizedClientIp)
             {
                 c.Stop();
@@ -68,23 +74,22 @@ public class MikuPassiveDataConnection : IFtpDataConnection
             _stream = new MikuClientStream(c);
             _streamTcs.TrySetResult(_stream);
         };
-        _dataServer.OnClientDataReceived += (c, data) => {
+        _dataServer.OnClientDataReceived += (c, data) =>
+        {
             if (c.Ip == authorizedClientIp)
             {
                 _stream?.EnqueueData(data);
             }
         };
-        _dataServer.OnClientDisconnected += (c, reason) => {
+        _dataServer.OnClientDisconnected += (c, reason) =>
+        {
             _stream?.Complete();
         };
         _dataServer.Start(ip, Port);
     }
 
     /// <inheritdoc/>
-    public Task<Stream> GetStreamAsync()
-    {
-        return _streamTcs.Task;
-    }
+    public Task<Stream> GetStreamAsync() => _streamTcs.Task;
 
     /// <inheritdoc/>
     public ValueTask DisposeAsync()

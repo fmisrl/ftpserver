@@ -17,7 +17,10 @@ public class PhysicalFileSystemProvider(IOptions<PhysicalFileSystemProviderOptio
     {
         var username = authContext.Username ?? "anonymous";
         var userRootPath = Path.GetFullPath(Path.Combine(_options.RootDirectory, username));
-        if (!Directory.Exists(userRootPath)) Directory.CreateDirectory(userRootPath);
+        if (!Directory.Exists(userRootPath))
+        {
+            Directory.CreateDirectory(userRootPath);
+        }
 
         var normalizedPath = path.Replace('/', Path.DirectorySeparatorChar).TrimStart(Path.DirectorySeparatorChar);
         var finalPath = Path.GetFullPath(Path.Combine(userRootPath, normalizedPath));
@@ -35,15 +38,18 @@ public class PhysicalFileSystemProvider(IOptions<PhysicalFileSystemProviderOptio
     {
         var fullPath = GetFullPath(authContext, path);
         var di = new DirectoryInfo(fullPath);
-        if (!di.Exists) return Task.FromResult(Enumerable.Empty<FileSystemEntry>());
+        if (!di.Exists)
+        {
+            return Task.FromResult(Enumerable.Empty<FileSystemEntry>());
+        }
 
         var entries = di.GetFileSystemInfos()
             .Select(fsi => new FileSystemEntry(
-            fsi.Name,
-            fsi is FileInfo fi ? fi.Length : 0,
-            fsi.LastWriteTime,
-            fsi is DirectoryInfo
-        ));
+                fsi.Name,
+                fsi is FileInfo fi ? fi.Length : 0,
+                fsi.LastWriteTime,
+                fsi is DirectoryInfo
+            ));
 
         return Task.FromResult(entries);
     }
@@ -98,8 +104,14 @@ public class PhysicalFileSystemProvider(IOptions<PhysicalFileSystemProviderOptio
     {
         var oldFullPath = GetFullPath(authContext, oldPath);
         var newFullPath = GetFullPath(authContext, newPath);
-        if (File.Exists(oldFullPath)) File.Move(oldFullPath, newFullPath);
-        else Directory.Move(oldFullPath, newFullPath);
+        if (File.Exists(oldFullPath))
+        {
+            File.Move(oldFullPath, newFullPath);
+        }
+        else
+        {
+            Directory.Move(oldFullPath, newFullPath);
+        }
         return Task.CompletedTask;
     }
 }

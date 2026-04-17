@@ -19,7 +19,8 @@ public class RenameCommands : IFtpCommand
 
     /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
-    {        if (context.Verb == "RNFR")
+    {
+        if (context.Verb == "RNFR")
         {
             await HandleRenameFromAsync(context);
         }

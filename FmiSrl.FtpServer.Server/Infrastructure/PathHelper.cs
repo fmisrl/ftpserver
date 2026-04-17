@@ -16,8 +16,8 @@ public static class PathHelper
         // Normalize backslashes to prevent path traversal evasion
         path = path.Replace('\\', '/');
 
-        string absolutePath = path.StartsWith('/') 
-            ? path 
+        var absolutePath = path.StartsWith('/')
+            ? path
             : $"{currentDirectory.TrimEnd('/')}/{path}";
 
         var parts = absolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
@@ -27,14 +27,17 @@ public static class PathHelper
         {
             ProcessPathPart(resolved, part);
         }
-        
+
         return "/" + string.Join('/', resolved);
     }
 
     private static void ProcessPathPart(List<string> resolved, string part)
     {
-        if (part == ".") return;
-        
+        if (part == ".")
+        {
+            return;
+        }
+
         if (part == "..")
         {
             HandleParentDirectory(resolved);

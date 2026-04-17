@@ -37,7 +37,7 @@ public class FtpSession : IFtpSession
     public string CurrentDirectory { get; set; }
 
     /// <inheritdoc/>
-    public EndPoint RemoteEndPoint => new IPEndPoint(IPAddress.Parse(_client.Ip), 0); // Placeholder port
+    public EndPoint RemoteEndPoint => new IPEndPoint(IPAddress.Parse(_client.Ip), 0);// Placeholder port
 
     /// <inheritdoc/>
     public IFtpDataConnection? DataConnection { get; set; }
@@ -46,7 +46,7 @@ public class FtpSession : IFtpSession
     /// Gets the command buffer used for accumulating data from the client.
     /// </summary>
     /// <value>A <see cref="StringBuilder"/> representing the command buffer.</value>
-    public StringBuilder CommandBuffer { get; } = new StringBuilder();
+    public StringBuilder CommandBuffer { get; } = new();
 
     /// <inheritdoc/>
     public async Task SendResponseAsync(int code, string message)
@@ -72,7 +72,10 @@ public class FtpSession : IFtpSession
     private sealed class SessionLock : IDisposable
     {
         private readonly SemaphoreSlim _semaphore;
-        public SessionLock(SemaphoreSlim semaphore) => _semaphore = semaphore;
+        public SessionLock(SemaphoreSlim semaphore)
+        {
+            _semaphore = semaphore;
+        }
         public void Dispose() => _semaphore.Release();
     }
 }
