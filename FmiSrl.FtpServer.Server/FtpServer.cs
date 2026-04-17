@@ -92,8 +92,8 @@ public class FtpServer(
         _netServer = new NetServer();
         _netServer.OnClientConnected += client => _ = HandleClientConnectedAsync(client);
         _netServer.OnClientDataReceived += (client, data) => _ = HandleClientDataReceivedAsync(client, data);
-        _netServer.OnClientDisconnected += (client, reason) => HandleClientDisconnected(client, reason);
-        _netServer.OnError += exception => HandleError(exception);
+        _netServer.OnClientDisconnected += HandleClientDisconnected;
+        _netServer.OnError += HandleError;
 
         _netServer.Start(_configurationOptions.ListeningIp, _configurationOptions.FtpPort);
         await Task.CompletedTask;
