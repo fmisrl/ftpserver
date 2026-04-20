@@ -1,10 +1,12 @@
-name: Publish to NuGet and GitHub Releases
+name: Build, Test and Publish
 
 on:
   push:
     branches:
-      - master
-      - dev
+      - '**'
+  pull_request:
+    branches:
+      - '**'
 
 jobs:
   build-and-publish:
@@ -21,11 +23,13 @@ jobs:
           lfs: true
 
       - name: Install GitVersion
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
         uses: gittools/actions/gitversion/setup@v4.5.0
         with:
           versionSpec: '6.7.x'
 
       - name: Determine Version
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
         id: version_step
         uses: gittools/actions/gitversion/execute@v4.5.0
         with:
@@ -39,27 +43,34 @@ jobs:
           dotnet-version: '10.0.x'
 
       - name: Restore dependencies
-        run: dotnet restore FmiSrl.FtpServer.Server/FmiSrl.FtpServer.Server.csproj
+        run: dotnet restore FmiSrl.FtpServer.slnx
 
-      - name: Build Project
-        run: dotnet build FmiSrl.FtpServer.Server/FmiSrl.FtpServer.Server.csproj -c Release --no-restore
+      - name: Build Solution
+        run: dotnet build FmiSrl.FtpServer.slnx -c Release --no-restore
+
+      - name: Run Tests
+        run: dotnet test FmiSrl.FtpServer.slnx -c Release --no-build --verbosity normal
 
       - name: Pack NuGet Package
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
         run: dotnet pack FmiSrl.FtpServer.Server/FmiSrl.FtpServer.Server.csproj -c Release --no-build -o ./artifacts
 
       - name: Publish to GitHub Packages
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
         run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --skip-duplicate
 
       - name: Create GitHub Release
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ steps.version_step.outputs.GitVersion_FullSemVer }}
           name: Release ${{ steps.version_step.outputs.GitVersion_FullSemVer }}
-          generate_release_notes: true # Uses commit history for the changelog
-          prerelease: ${{ github.ref != 'refs/heads/master' && github.ref != 'refs/heads/main' }} # Marks as pre-release if on 'dev'
+          generate_release_notes: true
+          prerelease: ${{ github.ref != 'refs/heads/master' }}
           files: ./artifacts/*.nupkg
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Publish to NuGet.org
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
         run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
