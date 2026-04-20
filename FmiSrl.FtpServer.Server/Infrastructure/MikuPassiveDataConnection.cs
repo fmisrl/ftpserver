@@ -69,8 +69,10 @@ public class MikuPassiveDataConnection : IFtpDataConnection
             if (!AreIpAddressesEqual(c.Ip, authorizedClientIp))
             {
                 // Unblock GetStreamAsync with an exception to prevent hanging the control connection
-                _streamTcs.TrySetException(new UnauthorizedAccessException($"Data connection from {c.Ip} rejected. Expected {authorizedClientIp}."));
-                
+                _streamTcs.TrySetException(
+                    new UnauthorizedAccessException(
+                        $"Data connection from {c.Ip} rejected. Expected {authorizedClientIp}."));
+
                 // Stop the client asynchronously to prevent potential library crashes
                 Task.Run(() => c.Stop());
                 return;
@@ -94,12 +96,21 @@ public class MikuPassiveDataConnection : IFtpDataConnection
 
     private static bool AreIpAddressesEqual(string ip1, string ip2)
     {
-        if (ip1 == ip2) return true;
-        if (string.IsNullOrEmpty(ip1) || string.IsNullOrEmpty(ip2)) return false;
+        if (ip1 == ip2)
+        {
+            return true;
+        }
+        if (string.IsNullOrEmpty(ip1) || string.IsNullOrEmpty(ip2))
+        {
+            return false;
+        }
 
         if (IPAddress.TryParse(ip1, out var addr1) && IPAddress.TryParse(ip2, out var addr2))
         {
-            if (addr1.Equals(addr2)) return true;
+            if (addr1.Equals(addr2))
+            {
+                return true;
+            }
 
             // Normalize to IPv6 for comparison to handle IPv4-mapped IPv6 addresses
             return addr1.MapToIPv6().Equals(addr2.MapToIPv6());

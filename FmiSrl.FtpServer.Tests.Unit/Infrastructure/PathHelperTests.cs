@@ -1,5 +1,4 @@
 using FmiSrl.FtpServer.Server.Infrastructure;
-using Xunit;
 
 namespace FmiSrl.FtpServer.Tests.Unit.Infrastructure;
 
