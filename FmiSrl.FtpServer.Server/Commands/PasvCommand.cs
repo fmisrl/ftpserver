@@ -74,18 +74,28 @@ public class PasvCommand : IFtpCommand
         }
 
         var clientIp = ipEndPoint.Address;
+        if (clientIp.IsIPv4MappedToIPv6)
+        {
+            clientIp = clientIp.MapToIPv4();
+        }
+
+        if (IPAddress.IsLoopback(clientIp))
+        {
+            return "127,0,0,1";
+        }
+
         IPAddress? fallbackIp = null;
 
         foreach (var networkInterface in NetworkInterface.GetAllNetworkInterfaces())
         {
-            if (networkInterface.OperationalStatus != OperationalStatus.Up ||
-                networkInterface.NetworkInterfaceType == NetworkInterfaceType.Loopback)
+            if (networkInterface.OperationalStatus is not OperationalStatus.Up ||
+                networkInterface.NetworkInterfaceType is NetworkInterfaceType.Loopback)
             {
                 continue;
             }
 
             var ipProperties = networkInterface.GetIPProperties();
-            var hasGateway = ipProperties.GatewayAddresses.Any();
+            var hasGateway = ipProperties.GatewayAddresses.Count > 0;
 
             foreach (var ip in ipProperties.UnicastAddresses)
             {

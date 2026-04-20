@@ -66,9 +66,13 @@ public class MikuPassiveDataConnection : IFtpDataConnection
         _dataServer = new NetServer();
         _dataServer.OnClientConnected += c =>
         {
-            if (c.Ip != authorizedClientIp)
+            if (!AreIpAddressesEqual(c.Ip, authorizedClientIp))
             {
-                c.Stop();
+                // Unblock GetStreamAsync with an exception to prevent hanging the control connection
+                _streamTcs.TrySetException(new UnauthorizedAccessException($"Data connection from {c.Ip} rejected. Expected {authorizedClientIp}."));
+                
+                // Stop the client asynchronously to prevent potential library crashes
+                Task.Run(() => c.Stop());
                 return;
             }
             _stream = new MikuClientStream(c);
@@ -76,7 +80,7 @@ public class MikuPassiveDataConnection : IFtpDataConnection
         };
         _dataServer.OnClientDataReceived += (c, data) =>
         {
-            if (c.Ip == authorizedClientIp)
+            if (AreIpAddressesEqual(c.Ip, authorizedClientIp))
             {
                 _stream?.EnqueueData(data);
             }
@@ -86,6 +90,22 @@ public class MikuPassiveDataConnection : IFtpDataConnection
             _stream?.Complete();
         };
         _dataServer.Start(ip, Port);
+    }
+
+    private static bool AreIpAddressesEqual(string ip1, string ip2)
+    {
+        if (ip1 == ip2) return true;
+        if (string.IsNullOrEmpty(ip1) || string.IsNullOrEmpty(ip2)) return false;
+
+        if (IPAddress.TryParse(ip1, out var addr1) && IPAddress.TryParse(ip2, out var addr2))
+        {
+            if (addr1.Equals(addr2)) return true;
+
+            // Normalize to IPv6 for comparison to handle IPv4-mapped IPv6 addresses
+            return addr1.MapToIPv6().Equals(addr2.MapToIPv6());
+        }
+
+        return false;
     }
 
     /// <inheritdoc/>
