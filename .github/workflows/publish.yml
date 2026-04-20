@@ -14,6 +14,8 @@ jobs:
     permissions:
       contents: write
       packages: write
+      checks: write
+      pull-requests: write
 
     steps:
       - name: Checkout Code
@@ -49,7 +51,15 @@ jobs:
         run: dotnet build FmiSrl.FtpServer.slnx -c Release --no-restore
 
       - name: Run Tests
-        run: dotnet test FmiSrl.FtpServer.slnx -c Release --no-build --verbosity normal
+        run: dotnet test FmiSrl.FtpServer.slnx -c Release --no-build --verbosity normal --logger "trx;LogFileName=test-results.trx"
+
+      - name: Publish Test Results
+        uses: dorny/test-reporter@v1
+        if: always()
+        with:
+          name: Test Results
+          path: "**/test-results.trx"
+          reporter: dotnet-trx
 
       - name: Pack NuGet Package
         if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
