@@ -44,6 +44,12 @@ public interface IFtpSession
     IFtpDataConnection? DataConnection { get; set; }
 
     /// <summary>
+    /// Gets the session state dictionary.
+    /// </summary>
+    /// <value>A <see cref="IDictionary{TKey, TValue}"/> for storing session-specific state.</value>
+    IDictionary<string, object> State { get; }
+
+    /// <summary>
     /// Sends a response with a status code and message to the client asynchronously.
     /// </summary>
     /// <param name="code">The FTP response code.</param>

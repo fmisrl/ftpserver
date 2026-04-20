@@ -15,7 +15,7 @@ public class RenameCommands : IFtpCommand
     /// <inheritdoc/>
     public bool RequiresAuthentication => true;
 
-    private string? _rnfrPath;
+    private const string RnfrPathKey = "RnfrPath";
 
     /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
@@ -30,7 +30,7 @@ public class RenameCommands : IFtpCommand
         }
     }
 
-    private async Task HandleRenameFromAsync(FtpCommandContext context)
+    private static async Task HandleRenameFromAsync(FtpCommandContext context)
     {
         if (string.IsNullOrWhiteSpace(context.Arguments))
         {
@@ -38,14 +38,15 @@ public class RenameCommands : IFtpCommand
             return;
         }
 
-        _rnfrPath = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
+        var rnfrPath = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
+        context.Session.State[RnfrPathKey] = rnfrPath;
 
         await context.Session.SendResponseAsync(350, "Requested file action pending further information.");
     }
 
-    private async Task HandleRenameToAsync(FtpCommandContext context)
+    private static async Task HandleRenameToAsync(FtpCommandContext context)
     {
-        if (_rnfrPath == null)
+        if (!context.Session.State.TryGetValue(RnfrPathKey, out var rnfrPathObj) || rnfrPathObj is not string rnfrPath)
         {
             await context.Session.SendResponseAsync(503, "Bad sequence of commands.");
             return;
@@ -55,7 +56,7 @@ public class RenameCommands : IFtpCommand
 
         try
         {
-            await TryPerformRenameAsync(context, rntoPath);
+            await TryPerformRenameAsync(context, rnfrPath, rntoPath);
         }
         catch (Exception ex)
         {
@@ -64,13 +65,13 @@ public class RenameCommands : IFtpCommand
         }
         finally
         {
-            _rnfrPath = null;
+            context.Session.State.Remove(RnfrPathKey);
         }
     }
 
-    private async Task TryPerformRenameAsync(FtpCommandContext context, string rntoPath)
+    private static async Task TryPerformRenameAsync(FtpCommandContext context, string rnfrPath, string rntoPath)
     {
-        await context.FileSystem.RenameAsync(context.AuthContext, _rnfrPath!, rntoPath);
+        await context.FileSystem.RenameAsync(context.AuthContext, rnfrPath, rntoPath);
         await context.Session.SendResponseAsync(250, "File renamed successfully.");
     }
 }

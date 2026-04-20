@@ -42,6 +42,9 @@ public class FtpSession : IFtpSession
     /// <inheritdoc/>
     public IFtpDataConnection? DataConnection { get; set; }
 
+    /// <inheritdoc/>
+    public IDictionary<string, object> State { get; } = new Dictionary<string, object>();
+
     /// <summary>
     /// Gets the command buffer used for accumulating data from the client.
     /// </summary>

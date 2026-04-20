@@ -49,6 +49,7 @@ public class FtpServer(
             new PwdCommand(),
             new PasvCommand(),
             new ListCommand(),
+            new NlstCommand(),
             new QuitCommand(),
             new SystCommand(),
             new FeatCommand(),

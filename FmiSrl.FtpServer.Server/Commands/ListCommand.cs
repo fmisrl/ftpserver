@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text;
 using FmiSrl.FtpServer.Server.Abstractions;
 using FmiSrl.FtpServer.Server.Infrastructure;
@@ -56,7 +57,7 @@ public class ListCommand : IFtpCommand
         }
         else
         {
-            dataStream.Dispose();
+            await dataStream.DisposeAsync();
         }
     }
 
@@ -68,7 +69,7 @@ public class ListCommand : IFtpCommand
             ? context.Session.CurrentDirectory
             : PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
 
-        await using var writer = new StreamWriter(dataStream, Encoding.UTF8, leaveOpen: true);
+        await using var writer = new StreamWriter(dataStream, new UTF8Encoding(false), leaveOpen: true);
         var entries = await context.FileSystem.GetEntriesAsync(context.AuthContext, targetPath);
 
         foreach (var entry in entries)
@@ -82,8 +83,9 @@ public class ListCommand : IFtpCommand
     private static async Task WriteEntryAsync(StreamWriter writer, FileSystemEntry entry, string username)
     {
         var type = entry.IsDirectory ? "d" : "-";
+        var lastModified = entry.LastModified.ToString("MMM dd HH:mm", CultureInfo.InvariantCulture);
         var line =
-            $"{type}rw-r--r-- 1 {username} {username} {entry.Size} {entry.LastModified:MMM dd HH:mm} {entry.Name}\r\n";
+            $"{type}rw-r--r-- 1 {username} {username} {entry.Size} {lastModified} {entry.Name}\r\n";
         await writer.WriteAsync(line);
     }
 }

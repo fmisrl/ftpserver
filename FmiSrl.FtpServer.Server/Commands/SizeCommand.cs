@@ -18,6 +18,11 @@ public class SizeCommand : IFtpCommand
     /// <inheritdoc/>
     public async Task ExecuteAsync(FtpCommandContext context)
     {
+        if (string.IsNullOrWhiteSpace(context.Arguments))
+        {
+            await context.Session.SendResponseAsync(501, "Syntax error in parameters or arguments.");
+            return;
+        }
         await ProcessSizeRequestAsync(context);
     }
 
