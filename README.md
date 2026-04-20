@@ -1,6 +1,6 @@
 ﻿# FmiSrl.FtpServer
 
-![Build, Test and Publish](https://github.com/fmisrl/FmiSrl.FtpServer/actions/workflows/publish.yml/badge.svg)
+[![Build, Test and Publish](https://github.com/fmisrl/ftpserver/actions/workflows/publish.yml/badge.svg)](https://github.com/fmisrl/ftpserver/actions/workflows/publish.yml)
 
 A lightweight, modern FTP server library for .NET.
 
