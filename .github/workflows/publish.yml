@@ -65,9 +65,9 @@ jobs:
         if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
         run: dotnet pack FmiSrl.FtpServer.Server/FmiSrl.FtpServer.Server.csproj -c Release --no-build -o ./artifacts
 
-      - name: Publish to GitHub Packages
+      - name: Generate Release Notes
         if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
-        run: dotnet nuget push ./artifacts/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/${{ github.repository_owner }}/index.json --skip-duplicate
+        run: pwsh ./generate-release-notes.ps1
 
       - name: Create GitHub Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
@@ -75,7 +75,8 @@ jobs:
         with:
           tag_name: v${{ steps.version_step.outputs.GitVersion_FullSemVer }}
           name: Release ${{ steps.version_step.outputs.GitVersion_FullSemVer }}
-          generate_release_notes: true
+          body_path: RELEASE_NOTES.md
+          generate_release_notes: false
           prerelease: ${{ github.ref != 'refs/heads/master' }}
           files: ./artifacts/*.nupkg
         env:
