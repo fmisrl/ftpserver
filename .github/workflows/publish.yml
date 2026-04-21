@@ -24,6 +24,11 @@ jobs:
           fetch-depth: 0
           lfs: true
 
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
       - name: Install GitVersion
         if: github.event_name == 'push' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/dev')
         uses: gittools/actions/gitversion/setup@v4.5.0
@@ -38,11 +43,6 @@ jobs:
           configFilePath: GitVersion.yml
           disableCache: true
           updateProjectFiles: true
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '10.0.x'
 
       - name: Restore dependencies
         run: dotnet restore FmiSrl.FtpServer.slnx
