@@ -133,4 +133,16 @@ public class PhysicalFileSystemProvider(IOptions<PhysicalFileSystemProviderOptio
         }
         return Task.CompletedTask;
     }
+
+    /// <inheritdoc/>
+    public Task<long> GetFileSizeAsync(FtpAuthenticationContext authContext, string path)
+    {
+        var fullPath = GetFullPath(authContext, path);
+        if (!File.Exists(fullPath))
+        {
+            throw new FileNotFoundException("File not found.", fullPath);
+        }
+
+        return Task.FromResult(new FileInfo(fullPath).Length);
+    }
 }

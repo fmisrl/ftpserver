@@ -67,6 +67,8 @@ public class DependencyInjectionTests
         public Task<bool> DirectoryExistsAsync(FtpAuthenticationContext authContext, string path) => throw new NotImplementedException();
         public Task<FileSystemEntry?> GetEntryAsync(FtpAuthenticationContext authContext, string path) => throw new NotImplementedException();
         public Task RenameAsync(FtpAuthenticationContext authContext, string oldPath, string newPath) => throw new NotImplementedException();
+
+        public Task<long> GetFileSizeAsync(FtpAuthenticationContext authContext, string path) => throw new NotImplementedException();
     }
 
     private sealed class DummyAuthProvider : IAuthenticationProvider

@@ -42,11 +42,10 @@ public class SizeCommand : IFtpCommand
 
     private static async Task TryGetFileSizeAsync(FtpCommandContext context, string targetFile)
     {
-        var entry = await context.FileSystem.GetEntryAsync(context.AuthContext, targetFile);
-
-        if (entry != null && !entry.IsDirectory)
+        if (await context.FileSystem.FileExistsAsync(context.AuthContext, targetFile))
         {
-            await context.Session.SendResponseAsync(213, entry.Size.ToString(CultureInfo.InvariantCulture));
+            var size = await context.FileSystem.GetFileSizeAsync(context.AuthContext, targetFile);
+            await context.Session.SendResponseAsync(213, size.ToString(CultureInfo.InvariantCulture));
             return;
         }
 
