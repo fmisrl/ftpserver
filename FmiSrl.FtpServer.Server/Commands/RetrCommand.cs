@@ -36,8 +36,9 @@ public class RetrCommand : IFtpCommand
     private static async Task ProcessRetrieveAsync(FtpCommandContext context)
     {
         var targetFile = PathHelper.NormalizePath(context.Session.CurrentDirectory, context.Arguments);
+        var entry = await context.FileSystem.GetEntryAsync(context.AuthContext, targetFile);
 
-        if (!await context.FileSystem.FileExistsAsync(context.AuthContext, targetFile))
+        if (entry == null || entry.IsDirectory)
         {
             await context.Session.SendResponseAsync(550, "File not found.");
             return;
@@ -47,7 +48,7 @@ public class RetrCommand : IFtpCommand
 
         try
         {
-            await TransferFileAsync(context, targetFile);
+            await TransferFileAsync(context, targetFile, entry);
         }
         catch (Exception ex)
         {
@@ -61,7 +62,7 @@ public class RetrCommand : IFtpCommand
         }
     }
 
-    private static async Task TransferFileAsync(FtpCommandContext context, string targetFile)
+    private static async Task TransferFileAsync(FtpCommandContext context, string targetFile, FileSystemEntry entry)
     {
         var dataStream = await context.Session.DataConnection!.GetStreamAsync();
 
@@ -70,7 +71,7 @@ public class RetrCommand : IFtpCommand
             context.Logger.LogInformation(
                 "Starting transfer of {TargetFile} ({Length} bytes)...",
                 targetFile,
-                fileStream.Length);
+                entry.Size);
             await fileStream.CopyToAsync(dataStream);
             context.Logger.LogInformation("Finished copying {TargetFile} to data stream.", targetFile);
         }

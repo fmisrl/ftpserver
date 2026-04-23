@@ -100,6 +100,25 @@ public class PhysicalFileSystemProvider(IOptions<PhysicalFileSystemProviderOptio
         Task.FromResult(Directory.Exists(GetFullPath(authContext, path)));
 
     /// <inheritdoc/>
+    public Task<FileSystemEntry?> GetEntryAsync(FtpAuthenticationContext authContext, string path)
+    {
+        var fullPath = GetFullPath(authContext, path);
+        if (File.Exists(fullPath))
+        {
+            var fi = new FileInfo(fullPath);
+            return Task.FromResult<FileSystemEntry?>(new FileSystemEntry(fi.Name, fi.Length, fi.LastWriteTime, false));
+        }
+
+        if (Directory.Exists(fullPath))
+        {
+            var di = new DirectoryInfo(fullPath);
+            return Task.FromResult<FileSystemEntry?>(new FileSystemEntry(di.Name, 0, di.LastWriteTime, true));
+        }
+
+        return Task.FromResult<FileSystemEntry?>(null);
+    }
+
+    /// <inheritdoc/>
     public Task RenameAsync(FtpAuthenticationContext authContext, string oldPath, string newPath)
     {
         var oldFullPath = GetFullPath(authContext, oldPath);
