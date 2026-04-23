@@ -70,6 +70,14 @@ public interface IFileSystemProvider
     Task<bool> DirectoryExistsAsync(FtpAuthenticationContext authContext, string path);
 
     /// <summary>
+    /// Gets a single file system entry for the specified path.
+    /// </summary>
+    /// <param name="authContext">The authentication context for the operation.</param>
+    /// <param name="path">The path to get the entry for.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="FileSystemEntry"/> or <c>null</c> if not found.</returns>
+    Task<FileSystemEntry?> GetEntryAsync(FtpAuthenticationContext authContext, string path);
+
+    /// <summary>
     /// Renames a file or directory.
     /// </summary>
     /// <param name="authContext">The authentication context for the operation.</param>

@@ -50,7 +50,7 @@ public class RetrCommandTests
     {
         var sut = new RetrCommand();
         _session.DataConnection.Returns(Substitute.For<IFtpDataConnection>());
-        _fileSystem.FileExistsAsync(Arg.Any<FtpAuthenticationContext>(), "/file.txt").Returns(false);
+        _fileSystem.GetEntryAsync(Arg.Any<FtpAuthenticationContext>(), "/file.txt").Returns((FileSystemEntry?)null);
         await sut.ExecuteAsync(_context);
         await _session.Received().SendResponseAsync(550, Arg.Any<string>());
     }
@@ -62,7 +62,8 @@ public class RetrCommandTests
         var dataConn = Substitute.For<IFtpDataConnection>();
         dataConn.GetStreamAsync().Returns(new MemoryStream());
         _session.DataConnection.Returns(dataConn);
-        _fileSystem.FileExistsAsync(Arg.Any<FtpAuthenticationContext>(), "/file.txt").Returns(true);
+        _fileSystem.GetEntryAsync(Arg.Any<FtpAuthenticationContext>(), "/file.txt")
+            .Returns(new FileSystemEntry("file.txt", 10, DateTime.Now, false));
         _fileSystem.OpenReadAsync(Arg.Any<FtpAuthenticationContext>(), "/file.txt").Returns(new MemoryStream(new byte[10]));
 
         await sut.ExecuteAsync(_context);
@@ -78,7 +79,8 @@ public class RetrCommandTests
         var sut = new RetrCommand();
         var dataConn = Substitute.For<IFtpDataConnection>();
         _session.DataConnection.Returns(dataConn);
-        _fileSystem.FileExistsAsync(Arg.Any<FtpAuthenticationContext>(), "/file.txt").Returns(true);
+        _fileSystem.GetEntryAsync(Arg.Any<FtpAuthenticationContext>(), "/file.txt")
+            .Returns(new FileSystemEntry("file.txt", 10, DateTime.Now, false));
         dataConn.GetStreamAsync().Throws(new InvalidOperationException());
 
         await sut.ExecuteAsync(_context);

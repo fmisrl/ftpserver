@@ -42,21 +42,14 @@ public class SizeCommand : IFtpCommand
 
     private static async Task TryGetFileSizeAsync(FtpCommandContext context, string targetFile)
     {
-        var directory = Path.GetDirectoryName(targetFile)?.Replace('\\', '/') ?? "/";
-        if (directory == string.Empty)
-        {
-            directory = "/";
-        }
+        var entry = await context.FileSystem.GetEntryAsync(context.AuthContext, targetFile);
 
-        var entries = await context.FileSystem.GetEntriesAsync(context.AuthContext, directory);
-        var file = entries.FirstOrDefault(e => !e.IsDirectory && e.Name == Path.GetFileName(targetFile));
-
-        if (file != null)
+        if (entry != null && !entry.IsDirectory)
         {
-            await context.Session.SendResponseAsync(213, file.Size.ToString(CultureInfo.InvariantCulture));
+            await context.Session.SendResponseAsync(213, entry.Size.ToString(CultureInfo.InvariantCulture));
             return;
         }
 
-        await context.Session.SendResponseAsync(550, "File not found.");
+        await context.Session.SendResponseAsync(550, "File not found or is a directory.");
     }
 }

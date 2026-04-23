@@ -65,6 +65,7 @@ public class DependencyInjectionTests
         public Task DeleteDirectoryAsync(FtpAuthenticationContext authContext, string path) => throw new NotImplementedException();
         public Task<bool> FileExistsAsync(FtpAuthenticationContext authContext, string path) => throw new NotImplementedException();
         public Task<bool> DirectoryExistsAsync(FtpAuthenticationContext authContext, string path) => throw new NotImplementedException();
+        public Task<FileSystemEntry?> GetEntryAsync(FtpAuthenticationContext authContext, string path) => throw new NotImplementedException();
         public Task RenameAsync(FtpAuthenticationContext authContext, string oldPath, string newPath) => throw new NotImplementedException();
     }
 

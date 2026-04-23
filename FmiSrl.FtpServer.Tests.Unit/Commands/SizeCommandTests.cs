@@ -39,8 +39,8 @@ public class SizeCommandTests
     public async Task ExecuteAsync_WhenFileExists_ShouldReturnSize()
     {
         var sut = new SizeCommand();
-        var entries = new[] { new FileSystemEntry("file.txt", 1234, DateTime.Now, false) };
-        _fileSystem.GetEntriesAsync(Arg.Any<FtpAuthenticationContext>(), "/").Returns(entries);
+        var entry = new FileSystemEntry("file.txt", 1234, DateTime.Now, false);
+        _fileSystem.GetEntryAsync(Arg.Any<FtpAuthenticationContext>(), "/file.txt").Returns(entry);
         await sut.ExecuteAsync(_context);
         await _session.Received().SendResponseAsync(213, "1234");
     }
@@ -49,16 +49,16 @@ public class SizeCommandTests
     public async Task ExecuteAsync_WhenFileNotFound_ShouldReturn550()
     {
         var sut = new SizeCommand();
-        _fileSystem.GetEntriesAsync(Arg.Any<FtpAuthenticationContext>(), "/").Returns(Array.Empty<FileSystemEntry>());
+        _fileSystem.GetEntryAsync(Arg.Any<FtpAuthenticationContext>(), "/file.txt").Returns((FileSystemEntry?)null);
         await sut.ExecuteAsync(_context);
-        await _session.Received().SendResponseAsync(550, "File not found.");
+        await _session.Received().SendResponseAsync(550, "File not found or is a directory.");
     }
 
     [Fact]
     public async Task ExecuteAsync_WhenException_ShouldReturn550()
     {
         var sut = new SizeCommand();
-        _fileSystem.GetEntriesAsync(Arg.Any<FtpAuthenticationContext>(), "/").Throws(new InvalidOperationException());
+        _fileSystem.GetEntryAsync(Arg.Any<FtpAuthenticationContext>(), "/file.txt").Throws(new InvalidOperationException());
         await sut.ExecuteAsync(_context);
         await _session.Received().SendResponseAsync(550, "Error getting file size.");
     }
