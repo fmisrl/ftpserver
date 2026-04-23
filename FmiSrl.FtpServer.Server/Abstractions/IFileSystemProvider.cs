@@ -85,4 +85,12 @@ public interface IFileSystemProvider
     /// <param name="newPath">The new path for the file or directory.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     Task RenameAsync(FtpAuthenticationContext authContext, string oldPath, string newPath);
+
+    /// <summary>
+    /// Gets the size of a file at the specified path.
+    /// </summary>
+    /// <param name="authContext">The authentication context for the operation.</param>
+    /// <param name="path">The path of the file to get the size for.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the size of the file in bytes.</returns>
+    Task<long> GetFileSizeAsync(FtpAuthenticationContext authContext, string path);
 }
