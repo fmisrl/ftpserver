@@ -23,6 +23,11 @@ public record FtpCommandContext(
 )
 {
     /// <summary>
+    /// Gets or sets the FTP response for this command.
+    /// </summary>
+    public FtpResponse? Response { get; set; }
+
+    /// <summary>
     /// Gets the authentication context for the current session.
     /// </summary>
     /// <value>A <see cref="FtpAuthenticationContext"/> for the current session.</value>

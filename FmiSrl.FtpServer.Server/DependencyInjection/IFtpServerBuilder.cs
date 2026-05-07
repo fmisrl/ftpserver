@@ -1,3 +1,4 @@
+using FmiSrl.FtpServer.Server.Abstractions;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace FmiSrl.FtpServer.Server.DependencyInjection;
@@ -12,4 +13,11 @@ public interface IFtpServerBuilder
     /// </summary>
     /// <value>The <see cref="IServiceCollection"/> used by this builder.</value>
     IServiceCollection Services { get; }
+
+    /// <summary>
+    /// Adds a middleware to the FTP command pipeline.
+    /// </summary>
+    /// <typeparam name="TMiddleware">The type of the middleware to add.</typeparam>
+    /// <returns>The <see cref="IFtpServerBuilder"/> instance.</returns>
+    IFtpServerBuilder AddMiddleware<TMiddleware>() where TMiddleware : class, IFtpCommandMiddleware;
 }
