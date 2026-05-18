@@ -1,3 +1,4 @@
+using FmiSrl.FtpServer.Server.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -32,6 +33,9 @@ public static class FtpServerServiceCollectionExtensions
 
         services.TryAddSingleton<FtpServer>();
 
-        return new FtpServerBuilder(services);
+        var builder = new FtpServerBuilder(services);
+        builder.AddMiddleware<FtpDiagnosticsMiddleware>();
+
+        return builder;
     }
 }

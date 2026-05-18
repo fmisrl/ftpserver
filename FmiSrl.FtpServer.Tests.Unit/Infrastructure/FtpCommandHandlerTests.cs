@@ -7,7 +7,7 @@ namespace FmiSrl.FtpServer.Tests.Unit.Infrastructure;
 
 public class FtpCommandHandlerTests
 {
-    private readonly FtpCommandHandler _sut = new();
+    private readonly FtpCommandHandler _sut = new(Enumerable.Empty<IFtpCommandMiddleware>());
     private readonly IFtpSession _session = Substitute.For<IFtpSession>();
     private readonly IFileSystemProvider _fileSystem = Substitute.For<IFileSystemProvider>();
     private readonly IAuthenticationProvider _authenticator = Substitute.For<IAuthenticationProvider>();
@@ -85,6 +85,6 @@ public class FtpCommandHandlerTests
         await _sut.HandleCommandAsync(context);
 
         // Assert
-        await command.Received().ExecuteAsync(context);
+        await command.Received().ExecuteAsync(Arg.Any<FtpCommandContext>());
     }
 }

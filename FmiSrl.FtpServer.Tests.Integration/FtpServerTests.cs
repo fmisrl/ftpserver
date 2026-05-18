@@ -1,6 +1,7 @@
 using System.Net;
 using FluentFTP;
 using FmiSrl.FtpServer.Server;
+using FmiSrl.FtpServer.Server.Abstractions;
 using FmiSrl.FtpServer.Server.Services;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -42,7 +43,7 @@ public class FtpServerTests : IAsyncDisposable
             ServerName = "TestServer"
         });
 
-        _server = new FmiSrl.FtpServer.Server.FtpServer(fileSystem, authenticator, serverOptions, NullLogger<FmiSrl.FtpServer.Server.FtpServer>.Instance);
+        _server = new FmiSrl.FtpServer.Server.FtpServer(fileSystem, authenticator, Enumerable.Empty<IFtpCommandMiddleware>(), serverOptions, NullLogger<FmiSrl.FtpServer.Server.FtpServer>.Instance);
     }
 
     public async ValueTask DisposeAsync()
