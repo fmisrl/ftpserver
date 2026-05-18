@@ -43,7 +43,7 @@ public class FtpServerTests : IAsyncDisposable
             ServerName = "TestServer"
         });
 
-        _server = new FmiSrl.FtpServer.Server.FtpServer(fileSystem, authenticator, Enumerable.Empty<IFtpCommandMiddleware>(), serverOptions, NullLogger<FmiSrl.FtpServer.Server.FtpServer>.Instance);
+        _server = new FmiSrl.FtpServer.Server.FtpServer(fileSystem, authenticator, Enumerable.Empty<IFtpCommandMiddleware>(), Enumerable.Empty<IFtpServerEventHandler>(), serverOptions, NullLogger<FmiSrl.FtpServer.Server.FtpServer>.Instance);
     }
 
     public async ValueTask DisposeAsync()
@@ -67,14 +67,14 @@ public class FtpServerTests : IAsyncDisposable
     {
         // Arrange
         await _server.StartAsync();
-        
+
         // Create a test file for the user
         var userRoot = Path.Combine(_rootPath, "test");
         Directory.CreateDirectory(userRoot);
         File.WriteAllText(Path.Combine(userRoot, "test.txt"), "Hello World");
 
         using var client = new AsyncFtpClient("127.0.0.1", "test", "password", _port);
-        
+
         // Act
         await client.Connect();
         var currentDir = await client.GetWorkingDirectory();
@@ -116,7 +116,7 @@ public class FtpServerTests : IAsyncDisposable
 
         // Assert
         Assert.Equal(FtpStatus.Success, status);
-        
+
         var filePath = Path.Combine(_rootPath, "test", "uploaded.txt");
         Assert.True(File.Exists(filePath));
         Assert.Equal(testContent, await File.ReadAllTextAsync(filePath));

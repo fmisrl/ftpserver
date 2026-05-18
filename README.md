@@ -95,6 +95,8 @@ var authOptions = Options.Create(new SimpleAuthenticationProviderOptions
 var ftpServer = new FtpServer(
     new PhysicalFileSystemProvider(fsOptions),
     new SimpleAuthenticationProvider(authOptions),
+    Enumerable.Empty<IFtpCommandMiddleware>(),
+    Enumerable.Empty<IFtpServerEventHandler>(),
     serverOptions,
     NullLogger<FtpServer>.Instance
 );

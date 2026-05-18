@@ -20,4 +20,11 @@ public interface IFtpServerBuilder
     /// <typeparam name="TMiddleware">The type of the middleware to add.</typeparam>
     /// <returns>The <see cref="IFtpServerBuilder"/> instance.</returns>
     IFtpServerBuilder AddMiddleware<TMiddleware>() where TMiddleware : class, IFtpCommandMiddleware;
+
+    /// <summary>
+    /// Adds an event handler to the FTP server.
+    /// </summary>
+    /// <typeparam name="TEventHandler">The type of the event handler to add.</typeparam>
+    /// <returns>The <see cref="IFtpServerBuilder"/> instance.</returns>
+    IFtpServerBuilder AddEventHandler<TEventHandler>() where TEventHandler : class, IFtpServerEventHandler;
 }
