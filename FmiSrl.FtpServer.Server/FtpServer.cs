@@ -23,6 +23,7 @@ public class FtpServer(
     IFileSystemProvider fileSystemProvider,
     IAuthenticationProvider authenticationProvider,
     IEnumerable<IFtpCommandMiddleware> middlewares,
+    IEnumerable<IFtpServerEventHandler> eventHandlers,
     IOptions<FtpServerConfigurationOptions> configurationOptions,
     ILogger<FtpServer>? logger = null
 )
@@ -34,6 +35,8 @@ public class FtpServer(
 
     private readonly IAuthenticationProvider _authenticationProvider =
         authenticationProvider ?? throw new ArgumentNullException(nameof(authenticationProvider));
+
+    private readonly IEnumerable<IFtpServerEventHandler> _eventHandlers = eventHandlers;
 
     private readonly ILogger<FtpServer> _logger = logger ?? NullLogger<FtpServer>.Instance;
     private readonly FtpCommandHandler _commandHandler = new(middlewares);
@@ -177,7 +180,8 @@ public class FtpServer(
             _fileSystemProvider,
             _authenticationProvider,
             _configurationOptions,
-            _logger);
+            _logger,
+            _eventHandlers);
 
         await _commandHandler.HandleCommandAsync(context);
 

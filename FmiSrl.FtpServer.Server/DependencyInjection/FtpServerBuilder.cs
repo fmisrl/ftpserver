@@ -12,4 +12,10 @@ internal sealed class FtpServerBuilder(IServiceCollection services) : IFtpServer
         Services.AddTransient<IFtpCommandMiddleware, TMiddleware>();
         return this;
     }
+
+    public IFtpServerBuilder AddEventHandler<TEventHandler>() where TEventHandler : class, IFtpServerEventHandler
+    {
+        Services.AddTransient<IFtpServerEventHandler, TEventHandler>();
+        return this;
+    }
 }

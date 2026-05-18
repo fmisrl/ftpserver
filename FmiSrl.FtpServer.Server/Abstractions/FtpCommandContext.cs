@@ -12,6 +12,7 @@ namespace FmiSrl.FtpServer.Server.Abstractions;
 /// <param name="Authenticator">The authentication provider to use.</param>
 /// <param name="Configuration">The server configuration options.</param>
 /// <param name="Logger">The logger to use for recording command execution details.</param>
+/// <param name="EventHandlers">The collection of registered FTP server event handlers.</param>
 public record FtpCommandContext(
     IFtpSession Session,
     string Verb,
@@ -19,7 +20,8 @@ public record FtpCommandContext(
     IFileSystemProvider FileSystem,
     IAuthenticationProvider Authenticator,
     FtpServerConfigurationOptions Configuration,
-    ILogger Logger
+    ILogger Logger,
+    IEnumerable<IFtpServerEventHandler>? EventHandlers = null
 )
 {
     /// <summary>

@@ -77,5 +77,20 @@ public class StorCommand : IFtpCommand
         }
 
         await context.Session.SendResponseAsync(226, "Transfer complete.");
+
+        if (context.EventHandlers != null)
+        {
+            foreach (var handler in context.EventHandlers)
+            {
+                try
+                {
+                    await handler.OnFileUploadedAsync(context.Session, targetFile);
+                }
+                catch (Exception ex)
+                {
+                    context.Logger.LogError(ex, "Error executing event handler {HandlerType} for file {TargetFile}", handler.GetType().Name, targetFile);
+                }
+            }
+        }
     }
 }
